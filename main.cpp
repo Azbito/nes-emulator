@@ -1,33 +1,11 @@
-#include "CPU6502.h"
-#include "NES.h"
-#include <string>
-#include <iostream>
-#include <vector>
+#include <windows.h>
+#include "Emulator.hpp"
 
-using namespace std;
-
-int main()
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
-    NES nes;
-    CPU6502 cpu;
+    Emulator emu;
 
-    string rom;
-
-    cout << "Please, insert a .nes file: ";
-    cin >> rom;
-
-    if (rom.empty() || !nes.loadRom(rom))
-    {
-        return 1;
-    }
-
-    cpu.mapMemory(vector<uint8_t>(nes.PRG.begin(), nes.PRG.end()));
-    cpu.reset();
-
-    while (true)
-    {
-        cpu.execute();
-    }
+    emu.start();
 
     return 0;
 }
