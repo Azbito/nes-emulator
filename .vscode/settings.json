@@ -1,0 +1,12 @@
+{
+  "C_Cpp.errorSquiggles": "disabled",
+  "files.associations": {
+    ".env*": "env",
+    "*.tf": "terraform",
+    "*.tfvars": "terraform-vars",
+    "*.tfbackend": "terraform-vars",
+    "*.rmd": "markdown",
+    "*.tcc": "cpp",
+    "cstdint": "cpp"
+  }
+}
