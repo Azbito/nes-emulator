@@ -6,7 +6,8 @@
         "${workspaceFolder}/**",
         "C:/msys64/mingw64/include",
         "C:/msys64/ucrt64/include",
-        "D:/Emulators/nes-emulator/include"
+        "D:/Emulators/nes-emulator/include",
+        "C:/Users/azbit/Downloads/SDL2/include"
       ],
       "defines": ["_DEBUG", "UNICODE", "_UNICODE"],
       "compilerPath": "C:\\msys64\\ucrt64\\bin\\gcc.exe",
