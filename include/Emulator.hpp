@@ -1,3 +1,5 @@
+#pragma once
+
 #include "CPU6502.hpp"
 #include "NES.h"
 #include "Window.h"
