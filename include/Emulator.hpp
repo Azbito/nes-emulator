@@ -23,11 +23,11 @@ public:
         CPU6502 *cpu = new CPU6502();
 
         Assembly assembly(cpu);
+        PPU ppu(cpu);
 
         cpu->setAssembly(&assembly);
 
         NES nes;
-        PPU ppu;
         Window win;
         string rom;
 
@@ -59,7 +59,7 @@ public:
             while (cyclesToExecute > 0)
             {
                 cpu->execute();
-                cout << "Executing opcode at PC: " << hex << cpu->getPC() << dec << endl;
+                // cout << "Executing opcode at PC: " << hex << cpu->getPC() << dec << endl;
                 cyclesToExecute -= cpu->getCycles();
             }
 

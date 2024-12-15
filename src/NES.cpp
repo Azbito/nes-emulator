@@ -34,21 +34,21 @@ bool NES::loadRom(const string &filename)
 
     file.close();
 
-    cout << "ROM loaded successfully!" << endl;
-    cout << "PRG Size: " << PRGSize / 1024 << " KB" << endl;
-    cout << "CHR Size: " << CHRSize / 1024 << " KB" << endl;
+    // cout << "ROM loaded successfully!" << endl;
+    // cout << "PRG Size: " << PRGSize / 1024 << " KB" << endl;
+    // cout << "CHR Size: " << CHRSize / 1024 << " KB" << endl;
 
     return true;
 }
 
 bool NES::verifyRom(const uint8_t *header)
 {
-    cout << "ROM Header: ";
-    for (int i = 0; i < 16; i++)
-    {
-        printf("%02X ", header[i]);
-    }
-    cout << endl;
+    // cout << "ROM Header: ";
+    // for (int i = 0; i < 16; i++)
+    // {
+    //     printf("%02X ", header[i]);
+    // }
+    // cout << endl;
 
     if (header[0] != 'N' || header[1] != 'E' || header[2] != 'S' || header[3] != 0x1A)
     {

@@ -18,7 +18,6 @@ public:
 
     static map<uint8_t, function<void(Assembly &)>> opcodeMap;
     void executeOpcode(uint8_t opcode);
-    void invokeAllHandlers();
     void brkHandler();
     void oraIzxHandler();
     void sloIzxHandler();

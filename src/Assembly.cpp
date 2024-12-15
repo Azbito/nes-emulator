@@ -9,11 +9,11 @@ void Assembly::executeOpcode(uint8_t opcode)
 
         if (this->cpu->status.getZeroFlag())
         {
-            cout << "Zero flag is set!" << endl;
+            // cout << "Zero flag is set!" << endl;
         }
         else
         {
-            cout << "Zero flag is clear!" << endl;
+            // cout << "Zero flag is clear!" << endl;
         }
     }
     else

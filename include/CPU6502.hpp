@@ -103,7 +103,7 @@ public:
     void setPC(uint16_t value)
     {
         PC = value;
-        cout << "PC set to: 0x" << hex << PC << endl;
+        // cout << "PC set to: 0x" << hex << PC << endl;
     }
     void setCycles(int value) { cycles = value; }
     void setMemory(uint16_t address, uint8_t value)
