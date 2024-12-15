@@ -1,7 +1,8 @@
-#include "CPU6502.h"
+#include "CPU6502.hpp"
 #include "NES.h"
 #include "Window.h"
 #include "PPU.h"
+#include "Assembly.h"
 
 #include <string>
 #include <iostream>
@@ -17,11 +18,15 @@ class Emulator
 public:
     int start()
     {
+        CPU6502 *cpu = new CPU6502();
+
+        Assembly assembly(cpu);
+
+        cpu->setAssembly(&assembly);
+
         NES nes;
-        CPU6502 cpu;
         PPU ppu;
         Window win;
-
         string rom;
 
         cout << "Please, insert a .nes file: ";
@@ -38,9 +43,8 @@ public:
             return 1;
         }
 
-        cpu.mapMemory(vector<uint8_t>(nes.PRG.begin(), nes.PRG.end()));
-        cpu.reset();
-
+        cpu->mapMemory(vector<uint8_t>(nes.PRG.begin(), nes.PRG.end()));
+        cpu->reset();
         vector<uint32_t> frameBuffer(win.width * win.height);
 
         auto lastTime = chrono::steady_clock::now();
@@ -52,18 +56,19 @@ public:
 
             while (cyclesToExecute > 0)
             {
-                cpu.execute();
-                cyclesToExecute -= cpu.cycles;
+                cpu->execute();
+                cout << "Executing opcode at PC: " << hex << cpu->getPC() << dec << endl;
+                cyclesToExecute -= cpu->getCycles();
             }
 
             ppu.renderFrame(frameBuffer);
-
             win.renderFrame(frameBuffer.data());
 
             lastTime = currentTime;
             SDL_Delay(16);
         }
 
+        delete cpu;
         return 0;
     }
 };

@@ -43,6 +43,13 @@ bool NES::loadRom(const string &filename)
 
 bool NES::verifyRom(const uint8_t *header)
 {
+    cout << "ROM Header: ";
+    for (int i = 0; i < 16; i++)
+    {
+        printf("%02X ", header[i]);
+    }
+    cout << endl;
+
     if (header[0] != 'N' || header[1] != 'E' || header[2] != 'S' || header[3] != 0x1A)
     {
         cerr << "Invalid iNES file!" << endl;
@@ -50,4 +57,4 @@ bool NES::verifyRom(const uint8_t *header)
     }
 
     return true;
-};
+}

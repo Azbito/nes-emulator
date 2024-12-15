@@ -1,16 +1,5 @@
-#include "CPU6502.h"
+#include "CPU6502.hpp"
 #include "Assembly.h"
-
-CPU6502::CPU6502() : assembly(nullptr), PC(0), A(0), X(0), Y(0)
-{
-    memory.fill(0);
-    status.reset();
-    A = X = Y = SP = 0;
-    PC = 0xFFFF;
-    cycles = 0;
-
-    status.P = 0;
-}
 
 uint8_t CPU6502::read(uint16_t address)
 {
@@ -22,31 +11,110 @@ void CPU6502::write(uint16_t address, uint8_t value)
     memory[address] = value;
 };
 
+uint16_t CPU6502::popStackWord()
+{
+    uint8_t lowByte = memory[0x0100 + SP];
+    SP++;
+    uint8_t highByte = memory[0x0100 + SP];
+    SP++;
+
+    return (highByte << 8) | lowByte;
+}
+
+uint16_t CPU6502::popStack16()
+{
+    uint8_t lowByte = this->memory[0x0100 + this->SP];
+    this->SP--;
+
+    uint8_t highByte = this->memory[0x0100 + this->SP];
+    this->SP--;
+    uint16_t result = (highByte << 8) | lowByte;
+
+    return result;
+}
+
+uint8_t CPU6502::popStack()
+{
+    uint8_t value = this->memory[0x0100 + this->SP];
+    this->SP++;
+    return value;
+}
+
+void CPU6502::pushStack(uint8_t value)
+{
+    this->memory[0x0100 + getSP()] = value;
+    setSP(getSP() - 1);
+}
+
+void CPU6502::triggerTrap()
+{
+    uint16_t returnAddress = getPC() + 1;
+    pushStack(returnAddress >> 8);
+    pushStack(returnAddress & 0xFF);
+    uint8_t status = getStatus().getP();
+    status |= 0x10;
+    status &= ~0x04;
+    pushStack(status);
+
+    getStatus().setInterruptFlag(true);
+
+    setPC(0xFFFA);
+    setCycles(getCycles() + 7);
+}
+
 void CPU6502::execute()
 {
-    uint8_t opcode = read(PC);
-    cycles = 0;
+    cout << "PC before fetch: 0x" << hex << PC << endl;
 
+    uint8_t opcode = memory[PC];
+    cycles = 0;
     cout << "Opcode at PC (0x" << hex << PC << "): "
          << setw(2) << setfill('0') << static_cast<int>(opcode) << endl;
+
+    cout << "PC after fetch: 0x" << hex << PC << endl;
+
+    uint16_t pc = getPC();
+    cout << "getPC returned: 0x" << hex << pc << endl;
+
+    setPC(pc + 1);
+
+    cout << "PC after increment: 0x" << hex << getPC() << endl;
+
     assembly->executeOpcode(opcode);
+}
+
+void CPU6502::setAssembly(Assembly *assembly)
+{
+    this->assembly = assembly;
 }
 
 void CPU6502::reset()
 {
-    uint8_t lowByte = read(0xFFFC);
-    uint8_t highByte = read(0xFFFD);
-
-    PC = (highByte << 8) | lowByte;
-
-    A = X = Y = SP = 0;
+    A = X = Y = 0;
+    SP = 0xFD;
 
     cycles = 0;
+    uint16_t resetVector = read(0xFFFC) | (read(0xFFFC + 1) << 8);
+    PC = 0x8000;
+
     status.reset();
+}
+
+uint16_t CPU6502::readMemory16(uint16_t address)
+{
+    uint8_t lowByte = memory[address];
+    uint8_t highByte = memory[address + 1];
+    return static_cast<uint16_t>((highByte << 8) | lowByte);
 }
 
 void CPU6502::printStatus()
 {
+    if (this == nullptr)
+    {
+        std::cerr << "Error: CPU is null!" << std::endl;
+        return;
+    }
+
     cout << "PC: " << hex << PC
          << " A: " << (int)A
          << " X: " << (int)X
@@ -72,8 +140,13 @@ void CPU6502::mapMemory(const vector<uint8_t> &PRG)
         memory[startAddress + i] = PRG[i];
     }
 
-    memory[0xFFFC] = 0x00;
-    memory[0xFFFD] = 0x80;
+    uint8_t lowByte = memory[0xFFFC];
+    uint8_t highByte = memory[0xFFFD];
+
+    uint16_t resetVector = (highByte << 8) | lowByte;
+
+    this->PC = 0x8000;
 
     cout << "Memory mapped. PRG ROM loaded at 0x8000." << endl;
+    cout << "Reset vector at 0xFFFC-0xFFFD points to: 0x" << hex << resetVector << dec << endl;
 }
