@@ -12,6 +12,7 @@
         "D:/Emulators/nes-emulator/src/Assembly.cpp",
         "D:/Emulators/nes-emulator/src/CPU6502.cpp",
         "D:/Emulators/nes-emulator/src/Window.cpp",
+        "D:/Emulators/nes-emulator/src/PPU.cpp",
         "-I",
         "D:/Emulators/nes-emulator/include",
         "-I",

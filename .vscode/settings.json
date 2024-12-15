@@ -7,6 +7,9 @@
     "*.tfbackend": "terraform-vars",
     "*.rmd": "markdown",
     "*.tcc": "cpp",
-    "cstdint": "cpp"
+    "cstdint": "cpp",
+    "iostream": "cpp",
+    "iomanip": "cpp",
+    "ostream": "cpp"
   }
 }
