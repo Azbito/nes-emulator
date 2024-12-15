@@ -1,10 +1,14 @@
 #include "CPU6502.h"
 #include "NES.h"
 #include "Window.h"
+#include "PPU.h"
 
 #include <string>
 #include <iostream>
 #include <vector>
+#include <chrono>
+#include <thread>
+#include <unistd.h>
 
 using namespace std;
 
@@ -15,6 +19,7 @@ public:
     {
         NES nes;
         CPU6502 cpu;
+        PPU ppu;
         Window win;
 
         string rom;
@@ -36,22 +41,29 @@ public:
         cpu.mapMemory(vector<uint8_t>(nes.PRG.begin(), nes.PRG.end()));
         cpu.reset();
 
-        uint32_t frameBuffer[win.width * win.height];
+        vector<uint32_t> frameBuffer(win.width * win.height);
 
+        auto lastTime = chrono::steady_clock::now();
         while (true)
         {
-            cpu.execute();
+            auto currentTime = chrono::steady_clock::now();
+            auto elapsedTime = chrono::duration_cast<chrono::milliseconds>(currentTime - lastTime).count();
+            int cyclesToExecute = elapsedTime * 1.79;
 
-            for (int i = 0; i < win.width * win.height; ++i)
+            while (cyclesToExecute > 0)
             {
-                frameBuffer[i] = 0xFF0000;
+                cpu.execute();
+                cyclesToExecute -= cpu.cycles;
             }
 
-            win.renderFrame(frameBuffer);
+            ppu.renderFrame(frameBuffer);
 
+            win.renderFrame(frameBuffer.data());
+
+            lastTime = currentTime;
             SDL_Delay(16);
         }
 
         return 0;
-    };
+    }
 };
