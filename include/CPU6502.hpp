@@ -57,6 +57,13 @@ public:
         void setBreakFlag(bool value) { P = value ? (P | 0x10) : (P & ~0x10); }
         void setReservedFlag(bool value) {}
         void setOverflowFlag(bool value) { P = value ? (P | 0x40) : (P & ~0x40); }
+        void setOverflowFlagAOR(uint8_t accumulator, uint8_t operand, uint8_t result)
+        {
+            bool overflow = ((accumulator & 0x80) == (operand & 0x80)) && ((accumulator & 0x80) != (result & 0x80));
+
+            setOverflowFlag(overflow);
+        }
+
         void setNegativeFlag(bool value) { P = value ? (P | 0x80) : (P & ~0x80); }
         void setCarryFlag(bool value) { P = value ? (P | 0x01) : (P & ~0x01); }
         void setInterruptDisableFlag(bool value) { P = value ? (P | 0x04) : (P & ~0x04); }
@@ -103,7 +110,7 @@ public:
     void setPC(uint16_t value)
     {
         PC = value;
-        // cout << "PC set to: 0x" << hex << PC << endl;
+        cout << "PC set to: 0x" << hex << PC << endl;
     }
     void setCycles(int value) { cycles = value; }
     void setMemory(uint16_t address, uint8_t value)

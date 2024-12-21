@@ -2,559 +2,851 @@
 
 void Assembly::executeOpcode(uint8_t opcode)
 {
-    auto it = Assembly::opcodeMap.find(opcode);
-    if (it != Assembly::opcodeMap.end())
-    {
-        it->second(*this);
-
-        if (this->cpu->status.getZeroFlag())
-        {
-            // cout << "Zero flag is set!" << endl;
-        }
-        else
-        {
-            // cout << "Zero flag is clear!" << endl;
-        }
-    }
-    else
-    {
-        cerr << "Unknown opcode: 0x" << setw(2) << setfill('0') << hex << static_cast<int>(opcode) << endl;
-    }
+    handleOpcode(opcode);
 }
 
-map<uint8_t, function<void(Assembly &)>> Assembly::opcodeMap = {
-    {0x00, [](Assembly &assembly)
-     { assembly.brkHandler(); }},
-    {0x01, [](Assembly &assembly)
-     { assembly.oraIzxHandler(); }},
-    {0x02, [](Assembly &assembly)
-     { assembly.kilHandler(); }},
-    {0x03, [](Assembly &assembly)
-     { assembly.sloIzxHandler(); }},
-    {0x04, [](Assembly &assembly)
-     { assembly.nopZpHandler(); }},
-    {0x05, [](Assembly &assembly)
-     { assembly.oraZpHandler(); }},
-    {0x06, [](Assembly &assembly)
-     { assembly.aslZpHandler(); }},
-    {0x07, [](Assembly &assembly)
-     { assembly.sloZpHandler(); }},
-    {0x08, [](Assembly &assembly)
-     { assembly.phpHandler(); }},
-    {0x09, [](Assembly &assembly)
-     { assembly.oraImmHandler(); }},
-    {0x0A, [](Assembly &assembly)
-     { assembly.aslAHandler(); }},
-    {0x0B, [](Assembly &assembly)
-     { assembly.ancImmHandler(); }},
-    {0x0C, [](Assembly &assembly)
-     { assembly.nopAbsHandler(); }},
-    {0x0D, [](Assembly &assembly)
-     { assembly.oraAbsHandler(); }},
-    {0x0E, [](Assembly &assembly)
-     { assembly.aslAbsHandler(); }},
-    {0x0F, [](Assembly &assembly)
-     { assembly.sloAbsHandler(); }},
-    {0x10, [](Assembly &assembly)
-     { assembly.bplHandler(); }},
-    {0x11, [](Assembly &assembly)
-     { assembly.oraIzyHandler(); }},
-    {0x12, [](Assembly &assembly)
-     { assembly.kilHandler(); }},
-    {0x13, [](Assembly &assembly)
-     { assembly.sloIzyHandler(); }},
-    {0x14, [](Assembly &assembly)
-     { assembly.nopZpxHandler(); }},
-    {0x15, [](Assembly &assembly)
-     { assembly.oraZpxHandler(); }},
-    {0x16, [](Assembly &assembly)
-     { assembly.aslZpxHandler(); }},
-    {0x17, [](Assembly &assembly)
-     { assembly.sloZpxHandler(); }},
-    {0x18, [](Assembly &assembly)
-     { assembly.secHandler(); }},
-    {0x19, [](Assembly &assembly)
-     { assembly.oraAbyHandler(); }},
-    {0x1A, [](Assembly &assembly)
-     { assembly.nopHandler(); }},
-    {0x1B, [](Assembly &assembly)
-     { assembly.sloAbyHandler(); }},
-    {0x1C, [](Assembly &assembly)
-     { assembly.nopAbxHandler(); }},
-    {0x1D, [](Assembly &assembly)
-     { assembly.oraAbxHandler(); }},
-    {0x1E, [](Assembly &assembly)
-     { assembly.aslAbxHandler(); }},
-    {0x1F, [](Assembly &assembly)
-     { assembly.sloAbxHandler(); }},
-    {0x20, [](Assembly &assembly)
-     { assembly.jsrAbsHandler(); }},
-    {0x21, [](Assembly &assembly)
-     { assembly.andIzxHandler(); }},
-    {0x22, [](Assembly &assembly)
-     { assembly.kilHandler(); }},
-    {0x23, [](Assembly &assembly)
-     { assembly.rlaIzxHandler(); }},
-    {0x24, [](Assembly &assembly)
-     { assembly.bitZpHandler(); }},
-    {0x25, [](Assembly &assembly)
-     { assembly.andZpHandler(); }},
-    {0x26, [](Assembly &assembly)
-     { assembly.rolZpHandler(); }},
-    {0x27, [](Assembly &assembly)
-     { assembly.rlaZpHandler(); }},
-    {0x28, [](Assembly &assembly)
-     { assembly.plpHandler(); }},
-    {0x29, [](Assembly &assembly)
-     { assembly.andImmHandler(); }},
-    {0x2A, [](Assembly &assembly)
-     { assembly.rolAHandler(); }},
-    {0x2B, [](Assembly &assembly)
-     { assembly.ancImmHandler(); }},
-    {0x2C, [](Assembly &assembly)
-     { assembly.bitAbsHandler(); }},
-    {0x2D, [](Assembly &assembly)
-     { assembly.andAbsHandler(); }},
-    {0x2E, [](Assembly &assembly)
-     { assembly.rolAbsHandler(); }},
-    {0x2F, [](Assembly &assembly)
-     { assembly.rlaAbsHandler(); }},
-    {0x30, [](Assembly &assembly)
-     { assembly.bmiRelHandler(); }},
-    {0x31, [](Assembly &assembly)
-     { assembly.andIzyHandler(); }},
-    {0x32, [](Assembly &assembly)
-     { assembly.kilHandler(); }},
-    {0x33, [](Assembly &assembly)
-     { assembly.rlaIzyHandler(); }},
-    {0x34, [](Assembly &assembly)
-     { assembly.nopZpxHandler(); }},
-    {0x35, [](Assembly &assembly)
-     { assembly.andZpxHandler(); }},
-    {0x36, [](Assembly &assembly)
-     { assembly.rolZpxHandler(); }},
-    {0x37, [](Assembly &assembly)
-     { assembly.rlaZpxHandler(); }},
-    {0x38, [](Assembly &assembly)
-     { assembly.secHandler(); }},
-    {0x39, [](Assembly &assembly)
-     { assembly.andAbyHandler(); }},
-    {0x3A, [](Assembly &assembly)
-     { assembly.nopHandler(); }},
-    {0x3B, [](Assembly &assembly)
-     { assembly.rlaAbyHandler(); }},
-    {0x3C, [](Assembly &assembly)
-     { assembly.nopAbxHandler(); }},
-    {0x3D, [](Assembly &assembly)
-     { assembly.andAbxHandler(); }},
-    {0x3E, [](Assembly &assembly)
-     { assembly.rolAbxHandler(); }},
-    {0x3F, [](Assembly &assembly)
-     { assembly.rlaAbxHandler(); }},
-    {0x40, [](Assembly &assembly)
-     { assembly.rtiHandler(); }},
-    {0x41, [](Assembly &assembly)
-     { assembly.eorIzxHandler(); }},
-    {0x42, [](Assembly &assembly)
-     { assembly.kilHandler(); }},
-    {0x43, [](Assembly &assembly)
-     { assembly.sreIzxHandler(); }},
-    {0x44, [](Assembly &assembly)
-     { assembly.nopZpHandler(); }},
-    {0x45, [](Assembly &assembly)
-     { assembly.eorZpHandler(); }},
-    {0x46, [](Assembly &assembly)
-     { assembly.lsrZpHandler(); }},
-    {0x47, [](Assembly &assembly)
-     { assembly.sreZpHandler(); }},
-    {0x48, [](Assembly &assembly)
-     { assembly.phaHandler(); }},
-    {0x49, [](Assembly &assembly)
-     { assembly.eorImmHandler(); }},
-    {0x4A, [](Assembly &assembly)
-     { assembly.lsrHandler(); }},
-    {0x4B, [](Assembly &assembly)
-     { assembly.alrHandler(); }},
-    {0x4C, [](Assembly &assembly)
-     { assembly.jmpAbsHandler(); }},
-    {0x4D, [](Assembly &assembly)
-     { assembly.eorAbsHandler(); }},
-    {0x4E, [](Assembly &assembly)
-     { assembly.lsrAbsHandler(); }},
-    {0x4F, [](Assembly &assembly)
-     { assembly.sreAbsHandler(); }},
-    {0x50, [](Assembly &assembly)
-     { assembly.bvcRelHandler(); }},
-    {0x51, [](Assembly &assembly)
-     { assembly.eorIzyHandler(); }},
-    {0x52, [](Assembly &assembly)
-     { assembly.kilHandler(); }},
-    {0x53, [](Assembly &assembly)
-     { assembly.sreIzyHandler(); }},
-    {0x54, [](Assembly &assembly)
-     { assembly.nopZpxHandler(); }},
-    {0x55, [](Assembly &assembly)
-     { assembly.eorZpxHandler(); }},
-    {0x56, [](Assembly &assembly)
-     { assembly.lsrZpxHandler(); }},
-    {0x57, [](Assembly &assembly)
-     { assembly.sreZpxHandler(); }},
-    {0x58, [](Assembly &assembly)
-     { assembly.cliHandler(); }},
-    {0x59, [](Assembly &assembly)
-     { assembly.eorAbyHandler(); }},
-    {0x5A, [](Assembly &assembly)
-     { assembly.nopHandler(); }},
-    {0x5B, [](Assembly &assembly)
-     { assembly.sreAbyHandler(); }},
-    {0x5C, [](Assembly &assembly)
-     { assembly.nopAbxHandler(); }},
-    {0x5D, [](Assembly &assembly)
-     { assembly.eorAbxHandler(); }},
-    {0x5E, [](Assembly &assembly)
-     { assembly.lsrAbxHandler(); }},
-    {0x5F, [](Assembly &assembly)
-     { assembly.sreAbxHandler(); }},
-    {0x60, [](Assembly &assembly)
-     { assembly.rtsHandler(); }},
-    {0x61, [](Assembly &assembly)
-     { assembly.adcIzxHandler(); }},
-    {0x62, [](Assembly &assembly)
-     { assembly.kilHandler(); }},
-    {0x63, [](Assembly &assembly)
-     { assembly.rraIzxHandler(); }},
-    {0x64, [](Assembly &assembly)
-     { assembly.nopZpHandler(); }},
-    {0x65, [](Assembly &assembly)
-     { assembly.adcZpHandler(); }},
-    {0x66, [](Assembly &assembly)
-     { assembly.rorZpHandler(); }},
-    {0x67, [](Assembly &assembly)
-     { assembly.rraZpHandler(); }},
-    {0x68, [](Assembly &assembly)
-     { assembly.plaHandler(); }},
-    {0x69, [](Assembly &assembly)
-     { assembly.adcImmHandler(); }},
-    {0x6A, [](Assembly &assembly)
-     { assembly.rorHandler(); }},
-    {0x6B, [](Assembly &assembly)
-     { assembly.arrHandler(); }},
-    {0x6C, [](Assembly &assembly)
-     { assembly.jmpIndHandler(); }},
-    {0x6D, [](Assembly &assembly)
-     { assembly.adcAbsHandler(); }},
-    {0x6E, [](Assembly &assembly)
-     { assembly.rorAbsHandler(); }},
-    {0x6F, [](Assembly &assembly)
-     { assembly.rraAbsHandler(); }},
-    {0x80, [](Assembly &assembly)
-     { assembly.nopImmHandler(); }},
-    {0x81, [](Assembly &assembly)
-     { assembly.staIzxHandler(); }},
-    {0x82, [](Assembly &assembly)
-     { assembly.nopImmHandler(); }},
-    {0x83, [](Assembly &assembly)
-     { assembly.saxIzxHandler(); }},
-    {0x84, [](Assembly &assembly)
-     { assembly.styZpHandler(); }},
-    {0x85, [](Assembly &assembly)
-     { assembly.staZpHandler(); }},
-    {0x86, [](Assembly &assembly)
-     { assembly.stxZpHandler(); }},
-    {0x87, [](Assembly &assembly)
-     { assembly.saxZpHandler(); }},
-    {0x88, [](Assembly &assembly)
-     { assembly.deyHandler(); }},
-    {0x89, [](Assembly &assembly)
-     { assembly.nopImmHandler(); }},
-    {0x8A, [](Assembly &assembly)
-     { assembly.txaHandler(); }},
-    {0x8B, [](Assembly &assembly)
-     { assembly.xaaImmHandler(); }},
-    {0x8C, [](Assembly &assembly)
-     { assembly.styAbsHandler(); }},
-    {0x8D, [](Assembly &assembly)
-     { assembly.staAbsHandler(); }},
-    {0x8E, [](Assembly &assembly)
-     { assembly.stxAbsHandler(); }},
-    {0x8F, [](Assembly &assembly)
-     { assembly.saxAbsHandler(); }},
-    {0x70, [](Assembly &assembly)
-     { assembly.bvsHandler(); }},
-    {0x71, [](Assembly &assembly)
-     { assembly.adcIzxHandler(); }},
-    {0x72, [](Assembly &assembly)
-     { assembly.crashHandler(); }},
-    {0x73, [](Assembly &assembly)
-     { assembly.rraIzxHandler(); }},
-    {0x74, [](Assembly &assembly)
-     { assembly.nopZpxHandler(); }},
-    {0x75, [](Assembly &assembly)
-     { assembly.adcZpxHandler(); }},
-    {0x76, [](Assembly &assembly)
-     { assembly.rorZpxHandler(); }},
-    {0x77, [](Assembly &assembly)
-     { assembly.rraZpxHandler(); }},
-    {0x78, [](Assembly &assembly)
-     { assembly.seiHandler(); }},
-    {0x79, [](Assembly &assembly)
-     { assembly.adcAbyHandler(); }},
-    {0x7A, [](Assembly &assembly)
-     { assembly.nopHandler(); }},
-    {0x7B, [](Assembly &assembly)
-     { assembly.rraAbyHandler(); }},
-    {0x7C, [](Assembly &assembly)
-     { assembly.nopAbxHandler(); }},
-    {0x7D, [](Assembly &assembly)
-     { assembly.adcAbxHandler(); }},
-    {0x7E, [](Assembly &assembly)
-     { assembly.rorAbxHandler(); }},
-    {0x7F, [](Assembly &assembly)
-     { assembly.rraAbxHandler(); }},
-    {0x90, [](Assembly &assembly)
-     { assembly.bccHandler(); }},
-    {0x91, [](Assembly &assembly)
-     { assembly.staIzyHandler(); }},
-    {0x92, [](Assembly &assembly)
-     { assembly.crashHandler(); }},
-    {0x93, [](Assembly &assembly)
-     { assembly.ahxIzyHandler(); }},
-    {0x94, [](Assembly &assembly)
-     { assembly.styZpxHandler(); }},
-    {0x95, [](Assembly &assembly)
-     { assembly.staZpxHandler(); }},
-    {0x96, [](Assembly &assembly)
-     { assembly.stxZpyHandler(); }},
-    {0x97, [](Assembly &assembly)
-     { assembly.saxZpyHandler(); }},
-    {0x98, [](Assembly &assembly)
-     { assembly.tyaHandler(); }},
-    {0x99, [](Assembly &assembly)
-     { assembly.staAbyHandler(); }},
-    {0x9A, [](Assembly &assembly)
-     { assembly.txsHandler(); }},
-    {0x9B, [](Assembly &assembly)
-     { assembly.tasAbyHandler(); }},
-    {0x9C, [](Assembly &assembly)
-     { assembly.shyAbxHandler(); }},
-    {0x9D, [](Assembly &assembly)
-     { assembly.staAbxHandler(); }},
-    {0x9E, [](Assembly &assembly)
-     { assembly.shxAbyHandler(); }},
-    {0x9F, [](Assembly &assembly)
-     { assembly.ahxAbyHandler(); }},
-    {0xA0, [](Assembly &assembly)
-     { assembly.ldyImmHandler(); }},
-    {0xA1, [](Assembly &assembly)
-     { assembly.ldaIzxHandler(); }},
-    {0xA2, [](Assembly &assembly)
-     { assembly.ldxImmHandler(); }},
-    {0xA3, [](Assembly &assembly)
-     { assembly.laxIzxHandler(); }},
-    {0xA4, [](Assembly &assembly)
-     { assembly.ldyZpHandler(); }},
-    {0xA5, [](Assembly &assembly)
-     { assembly.ldaZpHandler(); }},
-    {0xA6, [](Assembly &assembly)
-     { assembly.ldxZpHandler(); }},
-    {0xA8, [](Assembly &assembly)
-     { assembly.tayHandler(); }},
-    {0xA9, [](Assembly &assembly)
-     { assembly.ldaImmHandler(); }},
-    {0xAA, [](Assembly &assembly)
-     { assembly.taxHandler(); }},
-    {0xAB, [](Assembly &assembly)
-     { assembly.laxImmHandler(); }},
-    {0xAC, [](Assembly &assembly)
-     { assembly.ldyAbsHandler(); }},
-    {0xAD, [](Assembly &assembly)
-     { assembly.ldaAbsHandler(); }},
-    {0xAE, [](Assembly &assembly)
-     { assembly.ldxAbsHandler(); }},
-    {0xAF, [](Assembly &assembly)
-     { assembly.laxAbsHandler(); }},
-    {0xB0, [](Assembly &assembly)
-     { assembly.bcsHandler(); }},
-    {0xB1, [](Assembly &assembly)
-     { assembly.ldaIzyHandler(); }},
-    {0xB2, [](Assembly &assembly)
-     { assembly.crashHandler(); }},
-    {0xB3, [](Assembly &assembly)
-     { assembly.laxIzyHandler(); }},
-    {0xB4, [](Assembly &assembly)
-     { assembly.ldyZpxHandler(); }},
-    {0xB5, [](Assembly &assembly)
-     { assembly.ldaZpxHandler(); }},
-    {0xB6, [](Assembly &assembly)
-     { assembly.ldxZpyHandler(); }},
-    {0xB7, [](Assembly &assembly)
-     { assembly.laxZpyHandler(); }},
-    {0xB8, [](Assembly &assembly)
-     { assembly.clvHandler(); }},
-    {0xB9, [](Assembly &assembly)
-     { assembly.ldaAbyHandler(); }},
-    {0xBA, [](Assembly &assembly)
-     { assembly.tsxHandler(); }},
-    {0xBB, [](Assembly &assembly)
-     { assembly.lasAbyHandler(); }},
-    {0xBC, [](Assembly &assembly)
-     { assembly.ldyAbxHandler(); }},
-    {0xBD, [](Assembly &assembly)
-     { assembly.ldaAbxHandler(); }},
-    {0xBE, [](Assembly &assembly)
-     { assembly.ldxAbyHandler(); }},
-    {0xBF, [](Assembly &assembly)
-     { assembly.laxAbyHandler(); }},
-    {0xC0, [](Assembly &assembly)
-     { assembly.cpyImmHandler(); }},
-    {0xC1, [](Assembly &assembly)
-     { assembly.cmpIzxHandler(); }},
-    {0xC2, [](Assembly &assembly)
-     { assembly.nopImmHandler(); }},
-    {0xC3, [](Assembly &assembly)
-     { assembly.dcpIzxHandler(); }},
-    {0xC4, [](Assembly &assembly)
-     { assembly.cpyZpHandler(); }},
-    {0xC5, [](Assembly &assembly)
-     { assembly.cmpZpHandler(); }},
-    {0xC6, [](Assembly &assembly)
-     { assembly.decZpHandler(); }},
-    {0xC7, [](Assembly &assembly)
-     { assembly.dcpZpHandler(); }},
-    {0xC8, [](Assembly &assembly)
-     { assembly.inyHandler(); }},
-    {0xC9, [](Assembly &assembly)
-     { assembly.cmpImmHandler(); }},
-    {0xCA, [](Assembly &assembly)
-     { assembly.dexHandler(); }},
-    {0xCB, [](Assembly &assembly)
-     { assembly.axsImmHandler(); }},
-    {0xCC, [](Assembly &assembly)
-     { assembly.cpyAbsHandler(); }},
-    {0xCD, [](Assembly &assembly)
-     { assembly.cmpAbsHandler(); }},
-    {0xCE, [](Assembly &assembly)
-     { assembly.decAbsHandler(); }},
-    {0xCF, [](Assembly &assembly)
-     { assembly.dcpAbsHandler(); }},
-    {0xD0, [](Assembly &assembly)
-     { assembly.bneHandler(); }},
-    {0xD1, [](Assembly &assembly)
-     { assembly.cmpIzyHandler(); }},
-    {0xD2, [](Assembly &assembly)
-     { assembly.crashHandler(); }},
-    {0xD3, [](Assembly &assembly)
-     { assembly.dcpIzyHandler(); }},
-    {0xD4, [](Assembly &assembly)
-     { assembly.nopZpxHandler(); }},
-    {0xD5, [](Assembly &assembly)
-     { assembly.cmpZpxHandler(); }},
-    {0xD6, [](Assembly &assembly)
-     { assembly.decZpxHandler(); }},
-    {0xD7, [](Assembly &assembly)
-     { assembly.dcpZpxHandler(); }},
-    {0xD8, [](Assembly &assembly)
-     { assembly.cldHandler(); }},
-    {0xD9, [](Assembly &assembly)
-     { assembly.cmpAbyHandler(); }},
-    {0xDA, [](Assembly &assembly)
-     { assembly.nopHandler(); }},
-    {0xDB, [](Assembly &assembly)
-     { assembly.dcpAbyHandler(); }},
-    {0xDC, [](Assembly &assembly)
-     { assembly.nopAbxHandler(); }},
-    {0xDD, [](Assembly &assembly)
-     { assembly.cmpAbxHandler(); }},
-    {0xDE, [](Assembly &assembly)
-     { assembly.decAbxHandler(); }},
-    {0xDF, [](Assembly &assembly)
-     { assembly.dcpAbxHandler(); }},
-    {0xE0, [](Assembly &assembly)
-     { assembly.cpxImmHandler(); }},
-    {0xE1, [](Assembly &assembly)
-     { assembly.sbcIzxHandler(); }},
-    {0xE2, [](Assembly &assembly)
-     { assembly.nopImmHandler(); }},
-    {0xE3, [](Assembly &assembly)
-     { assembly.iscIzxHandler(); }},
-    {0xE4, [](Assembly &assembly)
-     { assembly.cpxZpHandler(); }},
-    {0xE5, [](Assembly &assembly)
-     { assembly.sbcZpHandler(); }},
-    {0xE6, [](Assembly &assembly)
-     { assembly.incZpHandler(); }},
-    {0xE7, [](Assembly &assembly)
-     { assembly.iscZpHandler(); }},
-    {0xE8, [](Assembly &assembly)
-     { assembly.inxHandler(); }},
-    {0xE9, [](Assembly &assembly)
-     { assembly.sbcImmHandler(); }},
-    {0xEA, [](Assembly &assembly)
-     { assembly.nopHandler(); }},
-    {0xEB, [](Assembly &assembly)
-     { assembly.sbcImmHandler(); }},
-    {0xEC, [](Assembly &assembly)
-     { assembly.cpxAbsHandler(); }},
-    {0xED, [](Assembly &assembly)
-     { assembly.sbcAbsHandler(); }},
-    {0xEE, [](Assembly &assembly)
-     { assembly.incAbsHandler(); }},
-    {0xEF, [](Assembly &assembly)
-     { assembly.iscAbsHandler(); }},
-    {0xF0, [](Assembly &assembly)
-     { assembly.beqHandler(); }},
-    {0xF1, [](Assembly &assembly)
-     { assembly.sbcIzyHandler(); }},
-    {0xF2, [](Assembly &assembly)
-     { assembly.crashHandler(); }},
-    {0xF3, [](Assembly &assembly)
-     { assembly.iscIzyHandler(); }},
-    {0xF4, [](Assembly &assembly)
-     { assembly.nopZpxHandler(); }},
-    {0xF5, [](Assembly &assembly)
-     { assembly.sbcZpxHandler(); }},
-    {0xF6, [](Assembly &assembly)
-     { assembly.incZpxHandler(); }},
-    {0xF7, [](Assembly &assembly)
-     { assembly.iscZpxHandler(); }},
-    {0xF8, [](Assembly &assembly)
-     { assembly.sedHandler(); }},
-    {0xF9, [](Assembly &assembly)
-     { assembly.sbcAbyHandler(); }},
-    {0xFA, [](Assembly &assembly)
-     { assembly.nopHandler(); }},
-    {0xFB, [](Assembly &assembly)
-     { assembly.iscAbyHandler(); }},
-    {0xFC, [](Assembly &assembly)
-     { assembly.nopAbxHandler(); }},
-    {0xFD, [](Assembly &assembly)
-     { assembly.sbcAbxHandler(); }},
-    {0xFE, [](Assembly &assembly)
-     { assembly.incAbxHandler(); }},
-    {0xFF, [](Assembly &assembly)
-     { assembly.iscAbxHandler(); }}};
+void Assembly::handleOpcode(uint8_t opcode)
+{
+    switch (opcode)
+    {
+    case 0x00:
+        brkHandler();
+        break;
+    case 0x01:
+        oraIzxHandler();
+        break;
+    case 0x02:
+        kilHandler();
+        break;
+    case 0x03:
+        sloIzxHandler();
+        break;
+    case 0x04:
+        nopZpHandler();
+        break;
+    case 0x05:
+        oraZpHandler();
+        break;
+    case 0x06:
+        aslZpHandler();
+        break;
+    case 0x07:
+        sloZpHandler();
+        break;
+    case 0x08:
+        phpHandler();
+        break;
+    case 0x09:
+        oraImmHandler();
+        break;
+    case 0x0A:
+        aslAHandler();
+        break;
+    case 0x0B:
+        ancImmHandler();
+        break;
+    case 0x0C:
+        nopAbsHandler();
+        break;
+    case 0x0D:
+        oraAbsHandler();
+        break;
+    case 0x0E:
+        aslAbsHandler();
+        break;
+    case 0x0F:
+        sloAbsHandler();
+        break;
+    case 0x10:
+        bplHandler();
+        break;
+    case 0x11:
+        oraIzyHandler();
+        break;
+    case 0x12:
+        kilHandler();
+        break;
+    case 0x13:
+        sloIzyHandler();
+        break;
+    case 0x14:
+        nopZpxHandler();
+        break;
+    case 0x15:
+        oraZpxHandler();
+        break;
+    case 0x16:
+        aslZpxHandler();
+        break;
+    case 0x17:
+        sloZpxHandler();
+        break;
+    case 0x18:
+        secHandler();
+        break;
+    case 0x19:
+        oraAbyHandler();
+        break;
+    case 0x1A:
+        nopHandler();
+        break;
+    case 0x1B:
+        sloAbyHandler();
+        break;
+    case 0x1C:
+        nopAbxHandler();
+        break;
+    case 0x1D:
+        oraAbxHandler();
+        break;
+    case 0x1E:
+        aslAbxHandler();
+        break;
+    case 0x1F:
+        sloAbxHandler();
+        break;
+    case 0x20:
+        jsrAbsHandler();
+        break;
+    case 0x21:
+        andIzxHandler();
+        break;
+    case 0x22:
+        kilHandler();
+        break;
+    case 0x23:
+        rlaIzxHandler();
+        break;
+    case 0x24:
+        bitZpHandler();
+        break;
+    case 0x25:
+        andZpHandler();
+        break;
+    case 0x26:
+        rolZpHandler();
+        break;
+    case 0x27:
+        rlaZpHandler();
+        break;
+    case 0x28:
+        plpHandler();
+        break;
+    case 0x29:
+        andImmHandler();
+        break;
+    case 0x2A:
+        rolAHandler();
+        break;
+    case 0x2B:
+        rlaImmHandler();
+        break;
+    case 0x2C:
+        bitAbsHandler();
+        break;
+    case 0x2D:
+        andAbsHandler();
+        break;
+    case 0x2E:
+        rolAbsHandler();
+        break;
+    case 0x2F:
+        rlaAbsHandler();
+        break;
+    case 0x30:
+        bmiHandler();
+        break;
+    case 0x31:
+        andIzyHandler();
+        break;
+    case 0x32:
+        kilHandler();
+        break;
+    case 0x33:
+        rlaIzyHandler();
+        break;
+    case 0x34:
+        nopZpxHandler();
+        break;
+    case 0x35:
+        andZpxHandler();
+        break;
+    case 0x36:
+        rolZpxHandler();
+        break;
+    case 0x37:
+        rlaZpxHandler();
+        break;
+    case 0x38:
+        secHandler();
+        break;
+    case 0x39:
+        andAbyHandler();
+        break;
+    case 0x3A:
+        nopHandler();
+        break;
+    case 0x3B:
+        rlaAbyHandler();
+        break;
+    case 0x3C:
+        nopAbxHandler();
+        break;
+    case 0x3D:
+        andAbxHandler();
+        break;
+    case 0x3E:
+        rolAbxHandler();
+        break;
+    case 0x3F:
+        rlaAbxHandler();
+        break;
+    case 0x40:
+        rtiHandler();
+        break;
+    case 0x41:
+        eorIzxHandler();
+        break;
+    case 0x42:
+        kilHandler();
+        break;
+    case 0x43:
+        sreIzxHandler();
+        break;
+    case 0x44:
+        nopZpHandler();
+        break;
+    case 0x45:
+        eorZpHandler();
+        break;
+    case 0x46:
+        lsrZpHandler();
+        break;
+    case 0x47:
+        sreZpHandler();
+        break;
+    case 0x48:
+        phaHandler();
+        break;
+    case 0x49:
+        eorImmHandler();
+        break;
+    case 0x4A:
+        lsrAHandler();
+        break;
+    case 0x4B:
+        sreImmHandler();
+        break;
+    case 0x4C:
+        jmpAbsHandler();
+        break;
+    case 0x4D:
+        eorAbsHandler();
+        break;
+    case 0x4E:
+        lsrAbsHandler();
+        break;
+    case 0x4F:
+        sreAbsHandler();
+        break;
+    case 0x50:
+        bvcHandler();
+        break;
+    case 0x51:
+        eorIzyHandler();
+        break;
+    case 0x52:
+        kilHandler();
+        break;
+    case 0x53:
+        sreIzyHandler();
+        break;
+    case 0x54:
+        nopZpxHandler();
+        break;
+    case 0x55:
+        eorZpxHandler();
+        break;
+    case 0x56:
+        lsrZpxHandler();
+        break;
+    case 0x57:
+        sreZpxHandler();
+        break;
+    case 0x58:
+        cliHandler();
+        break;
+    case 0x59:
+        eorAbyHandler();
+        break;
+    case 0x5A:
+        nopHandler();
+        break;
+    case 0x5B:
+        sreAbyHandler();
+        break;
+    case 0x5C:
+        nopAbxHandler();
+        break;
+    case 0x5D:
+        eorAbxHandler();
+        break;
+    case 0x5E:
+        lsrAbxHandler();
+        break;
+    case 0x5F:
+        sreAbxHandler();
+        break;
+    case 0x60:
+        rtsHandler();
+        break;
+    case 0x61:
+        adcIzxHandler();
+        break;
+    case 0x62:
+        kilHandler();
+        break;
+    case 0x63:
+        rraIzxHandler();
+        break;
+    case 0x64:
+        nopZpHandler();
+        break;
+    case 0x65:
+        adcZpHandler();
+        break;
+    case 0x66:
+        rorZpHandler();
+        break;
+    case 0x67:
+        rraZpHandler();
+        break;
+    case 0x68:
+        plaHandler();
+        break;
+    case 0x69:
+        adcImmHandler();
+        break;
+    case 0x6A:
+        rorAHandler();
+        break;
+    case 0x6B:
+        rraImmHandler();
+        break;
+    case 0x6C:
+        jmpIndHandler();
+        break;
+    case 0x6D:
+        adcAbsHandler();
+        break;
+    case 0x6E:
+        rorAbsHandler();
+        break;
+    case 0x6F:
+        rraAbsHandler();
+        break;
+    case 0x70:
+        bvsHandler();
+        break;
+    case 0x71:
+        adcIzyHandler();
+        break;
+    case 0x72:
+        kilHandler();
+        break;
+    case 0x73:
+        rraIzyHandler();
+        break;
+    case 0x74:
+        nopZpxHandler();
+        break;
+    case 0x75:
+        adcZpxHandler();
+        break;
+    case 0x76:
+        rorZpxHandler();
+        break;
+    case 0x77:
+        rraZpxHandler();
+        break;
+    case 0x78:
+        seiHandler();
+        break;
+    case 0x79:
+        adcAbyHandler();
+        break;
+    case 0x7A:
+        nopHandler();
+        break;
+    case 0x7B:
+        rraAbyHandler();
+        break;
+    case 0x7C:
+        nopAbxHandler();
+        break;
+    case 0x7D:
+        adcAbxHandler();
+        break;
+    case 0x7E:
+        rorAbxHandler();
+        break;
+    case 0x7F:
+        rraAbxHandler();
+        break;
+    case 0x80:
+        nopImmHandler();
+        break;
+    case 0x81:
+        staIzxHandler();
+        break;
+    case 0x82:
+        nopImmHandler();
+        break;
+    case 0x83:
+        saxIzxHandler();
+        break;
+    case 0x84:
+        styZpHandler();
+        break;
+    case 0x85:
+        staZpHandler();
+        break;
+    case 0x86:
+        stxZpHandler();
+        break;
+    case 0x87:
+        saxZpHandler();
+        break;
+    case 0x88:
+        deyHandler();
+        break;
+    case 0x89:
+        nopImmHandler();
+        break;
+    case 0x8A:
+        txaHandler();
+        break;
+    case 0x8B:
+        xaaImmHandler();
+        break;
+    case 0x8C:
+        styAbsHandler();
+        break;
+    case 0x8D:
+        staAbsHandler();
+        break;
+    case 0x8E:
+        stxAbsHandler();
+        break;
+    case 0x8F:
+        saxAbsHandler();
+        break;
+    case 0x90:
+        bccHandler();
+        break;
+    case 0x91:
+        staIzyHandler();
+        break;
+    case 0x92:
+        crashHandler();
+        break;
+    case 0x93:
+        ahxIzyHandler();
+        break;
+    case 0x94:
+        styZpxHandler();
+        break;
+    case 0x95:
+        staZpxHandler();
+        break;
+    case 0x96:
+        stxZpyHandler();
+        break;
+    case 0x97:
+        saxZpyHandler();
+        break;
+    case 0x98:
+        tyaHandler();
+        break;
+    case 0x99:
+        staAbyHandler();
+        break;
+    case 0x9A:
+        txsHandler();
+        break;
+    case 0x9B:
+        tasAbyHandler();
+        break;
+    case 0x9C:
+        shyAbxHandler();
+        break;
+    case 0x9D:
+        staAbxHandler();
+        break;
+    case 0x9E:
+        shxAbyHandler();
+        break;
+    case 0x9F:
+        ahxAbyHandler();
+        break;
+    case 0xA0:
+        ldyImmHandler();
+        break;
+    case 0xA1:
+        ldaIzxHandler();
+        break;
+    case 0xA2:
+        ldxImmHandler();
+        break;
+    case 0xA3:
+        laxIzxHandler();
+        break;
+    case 0xA4:
+        ldyZpHandler();
+        break;
+    case 0xA5:
+        ldaZpHandler();
+        break;
+    case 0xA6:
+        ldxZpHandler();
+        break;
+    case 0xA7:
+        laxZpHandler();
+        break;
+    case 0xA8:
+        tayHandler();
+        break;
+    case 0xA9:
+        ldaImmHandler();
+        break;
+    case 0xAA:
+        taxHandler();
+        break;
+    case 0xAB:
+        laxImmHandler();
+        break;
+    case 0xAC:
+        ldyAbsHandler();
+        break;
+    case 0xAD:
+        ldaAbsHandler();
+        break;
+    case 0xAE:
+        ldxAbsHandler();
+        break;
+    case 0xAF:
+        laxAbsHandler();
+        break;
+    case 0xB0:
+        bcsHandler();
+        break;
+    case 0xB1:
+        ldaIzyHandler();
+        break;
+    case 0xB2:
+        crashHandler();
+        break;
+    case 0xB3:
+        laxIzyHandler();
+        break;
+    case 0xB4:
+        ldyZpxHandler();
+        break;
+    case 0xB5:
+        ldaZpxHandler();
+        break;
+    case 0xB6:
+        ldxZpyHandler();
+        break;
+    case 0xB7:
+        laxZpyHandler();
+        break;
+    case 0xB8:
+        clvHandler();
+        break;
+    case 0xB9:
+        ldaAbyHandler();
+        break;
+    case 0xBA:
+        tsxHandler();
+        break;
+    case 0xBB:
+        lasAbyHandler();
+        break;
+    case 0xBC:
+        ldyAbxHandler();
+        break;
+    case 0xBD:
+        ldaAbxHandler();
+        break;
+    case 0xBE:
+        ldxAbyHandler();
+        break;
+    case 0xBF:
+        laxAbyHandler();
+        break;
+    case 0xC0:
+        cpyImmHandler();
+        break;
+    case 0xC1:
+        cmpIzxHandler();
+        break;
+    case 0xC2:
+        nopImmHandler();
+        break;
+    case 0xC3:
+        dcpIzxHandler();
+        break;
+    case 0xC4:
+        cpyZpHandler();
+        break;
+    case 0xC5:
+        cmpZpHandler();
+        break;
+    case 0xC6:
+        decZpHandler();
+        break;
+    case 0xC7:
+        dcpZpHandler();
+        break;
+    case 0xC8:
+        inyHandler();
+        break;
+    case 0xC9:
+        cmpImmHandler();
+        break;
+    case 0xCA:
+        dexHandler();
+        break;
+    case 0xCB:
+        axsImmHandler();
+        break;
+    case 0xCC:
+        cpyAbsHandler();
+        break;
+    case 0xCD:
+        cmpAbsHandler();
+        break;
+    case 0xCE:
+        decAbsHandler();
+        break;
+    case 0xCF:
+        dcpAbsHandler();
+        break;
+    case 0xD0:
+        bneHandler();
+        break;
+    case 0xD1:
+        cmpIzyHandler();
+        break;
+    case 0xD2:
+        crashHandler();
+        break;
+    case 0xD3:
+        dcpIzyHandler();
+        break;
+    case 0xD4:
+        nopZpxHandler();
+        break;
+    case 0xD5:
+        cmpZpxHandler();
+        break;
+    case 0xD6:
+        decZpxHandler();
+        break;
+    case 0xD7:
+        dcpZpxHandler();
+        break;
+    case 0xD8:
+        cldHandler();
+        break;
+    case 0xD9:
+        cmpAbyHandler();
+        break;
+    case 0xDA:
+        nopHandler();
+        break;
+    case 0xDB:
+        dcpAbyHandler();
+        break;
+    case 0xDC:
+        nopAbxHandler();
+        break;
+    case 0xDD:
+        cmpAbxHandler();
+        break;
+    case 0xDE:
+        decAbxHandler();
+        break;
+    case 0xDF:
+        dcpAbxHandler();
+        break;
+    case 0xE0:
+        cpxImmHandler();
+        break;
+    case 0xE1:
+        sbcIzxHandler();
+        break;
+    case 0xE2:
+        nopImmHandler();
+        break;
+    case 0xE3:
+        iscIzxHandler();
+        break;
+    case 0xE4:
+        cpxZpHandler();
+        break;
+    case 0xE5:
+        sbcZpHandler();
+        break;
+    case 0xE6:
+        incZpHandler();
+        break;
+    case 0xE7:
+        iscZpHandler();
+        break;
+    case 0xE8:
+        inxHandler();
+        break;
+    case 0xE9:
+        sbcImmHandler();
+        break;
+    case 0xEA:
+        nopHandler();
+        break;
+    case 0xEB:
+        sbcImmHandler();
+        break;
+    case 0xEC:
+        cpxAbsHandler();
+        break;
+    case 0xED:
+        sbcAbsHandler();
+        break;
+    case 0xEE:
+        incAbsHandler();
+        break;
+    case 0xEF:
+        iscAbsHandler();
+        break;
+    case 0xF0:
+        beqHandler();
+        break;
+    case 0xF1:
+        sbcIzyHandler();
+        break;
+    case 0xF2:
+        crashHandler();
+        break;
+    case 0xF3:
+        iscIzyHandler();
+        break;
+    case 0xF4:
+        nopZpxHandler();
+        break;
+    case 0xF5:
+        sbcZpxHandler();
+        break;
+    case 0xF6:
+        incZpxHandler();
+        break;
+    case 0xF7:
+        iscZpxHandler();
+        break;
+    case 0xF8:
+        sedHandler();
+        break;
+    case 0xF9:
+        sbcAbyHandler();
+        break;
+    case 0xFA:
+        nopHandler();
+        break;
+    case 0xFB:
+        iscAbyHandler();
+        break;
+    case 0xFC:
+        nopAbxHandler();
+        break;
+    case 0xFD:
+        sbcAbxHandler();
+        break;
+    case 0xFE:
+        incAbxHandler();
+        break;
+    case 0xFF:
+        iscAbxHandler();
+        break;
+    default:
+        cerr << "Unexpected opcode (0x" << hex << (int)opcode << ") in crashHandler!" << endl;
+        break;
+    }
+}
 
 void Assembly::brkHandler()
 {
-
     this->cpu->setPC(this->cpu->getPC() + 1);
+    this->cpu->pushStack(this->cpu->getPC() >> 8);
+    this->cpu->pushStack(this->cpu->getPC() & 0xFF);
+    this->cpu->getStatus().setBreakFlag(true);
+    this->cpu->pushStack(this->cpu->getStatus().getP());
+    this->cpu->setPC(this->cpu->getMemory(0xFFFE) | (this->cpu->getMemory(0xFFFF) << 8));
+    this->cpu->getStatus().setInterruptFlag(true);
     this->cpu->setCycles(this->cpu->getCycles() + 7);
 }
 
-void Assembly::oraIzxHandler()
+void Assembly::aslAHandler()
+{
+    uint8_t accumulator = this->cpu->getAccumulator();
+    this->cpu->getStatus().setCarryFlag(accumulator & 0x80);
+    uint8_t result = accumulator << 1;
+    this->cpu->setAccumulator(result);
+    this->cpu->getStatus().setZeroFlag(result == 0);
+    this->cpu->getStatus().setNegativeFlag(result & 0x80);
+
+    this->cpu->setPC(this->cpu->getPC() + 1);
+    this->cpu->setCycles(this->cpu->getCycles() + 2);
+}
+
+void Assembly::aslZpHandler()
 {
     uint8_t operand = this->cpu->getMemory(this->cpu->getPC() + 1);
-    uint8_t address = this->cpu->getMemory(operand + this->cpu->getXRegister());
-    this->cpu->setAccumulator(this->cpu->getAccumulator() | address);
+    uint8_t value = this->cpu->getMemory(operand);
+    this->cpu->getStatus().setCarryFlag(value & 0x80);
+    uint8_t result = value << 1;
+    this->cpu->write(operand, result);
+    this->cpu->getStatus().setZeroFlag(result == 0);
+    this->cpu->getStatus().setNegativeFlag(result & 0x80);
 
     this->cpu->setPC(this->cpu->getPC() + 2);
+    this->cpu->setCycles(this->cpu->getCycles() + 5);
+}
+
+void Assembly::aslAbsHandler()
+{
+    uint16_t address = this->cpu->readMemory16(this->cpu->getPC() + 1);
+    uint8_t value = this->cpu->getMemory(address);
+    this->cpu->getStatus().setCarryFlag(value & 0x80);
+    uint8_t result = value << 1;
+    this->cpu->write(address, result);
+
+    this->cpu->getStatus().setZeroFlag(result == 0);
+    this->cpu->getStatus().setNegativeFlag(result & 0x80);
+
+    this->cpu->setPC(this->cpu->getPC() + 3);
     this->cpu->setCycles(this->cpu->getCycles() + 6);
 }
 
-void Assembly::nopZpHandler()
+void Assembly::oraImmHandler()
 {
+    uint8_t operand = this->cpu->getMemory(this->cpu->getPC() + 1);
+    this->cpu->setAccumulator(this->cpu->getAccumulator() | operand);
+
+    this->cpu->getStatus().setZeroFlag(this->cpu->getAccumulator() == 0);
+    this->cpu->getStatus().setNegativeFlag(this->cpu->getAccumulator() & 0x80);
+
     this->cpu->setPC(this->cpu->getPC() + 2);
-    this->cpu->setCycles(this->cpu->getCycles() + 3);
+    this->cpu->setCycles(this->cpu->getCycles() + 2);
 }
 
 void Assembly::oraZpHandler()
@@ -563,86 +855,11 @@ void Assembly::oraZpHandler()
     uint8_t value = this->cpu->getMemory(operand);
     this->cpu->setAccumulator(this->cpu->getAccumulator() | value);
 
+    this->cpu->getStatus().setZeroFlag(this->cpu->getAccumulator() == 0);
+    this->cpu->getStatus().setNegativeFlag(this->cpu->getAccumulator() & 0x80);
+
     this->cpu->setPC(this->cpu->getPC() + 2);
     this->cpu->setCycles(this->cpu->getCycles() + 3);
-}
-
-void Assembly::aslZpHandler()
-{
-    uint8_t operand = this->cpu->getMemory(this->cpu->getPC() + 1);
-    uint8_t value = this->cpu->getMemory(operand);
-    uint8_t result = value << 1;
-    this->cpu->write(operand, result);
-
-    this->cpu->getStatus().setCarryFlag(result & 0x01);
-    this->cpu->getStatus().setZeroFlag(result == 0);
-    this->cpu->getStatus().setNegativeFlag(result & 0x80);
-
-    this->cpu->setPC(this->cpu->getPC() + 2);
-    this->cpu->setCycles(this->cpu->getCycles() + 5);
-}
-
-void Assembly::sloZpHandler()
-{
-    uint8_t operand = this->cpu->getMemory(this->cpu->getPC() + 1);
-    uint8_t value = this->cpu->getMemory(operand);
-    uint8_t result = value << 1;
-    this->cpu->write(operand, result);
-
-    this->cpu->setAccumulator(this->cpu->getAccumulator() | result);
-
-    this->cpu->setPC(this->cpu->getPC() + 2);
-    this->cpu->setCycles(this->cpu->getCycles() + 5);
-}
-
-void Assembly::phpHandler()
-{
-    this->cpu->getStatus().setBreakFlag(true);
-    this->cpu->pushStack(this->cpu->getStatus().getP());
-    this->cpu->pushStack(this->cpu->getPC() >> 8);
-    this->cpu->pushStack(this->cpu->getPC() & 0xFF);
-
-    this->cpu->setPC(this->cpu->getPC() + 1);
-    this->cpu->setCycles(this->cpu->getCycles() + 3);
-}
-
-void Assembly::oraImmHandler()
-{
-    uint8_t operand = this->cpu->getMemory(this->cpu->getPC() + 1);
-    this->cpu->setAccumulator(this->cpu->getAccumulator() | operand);
-
-    this->cpu->setPC(this->cpu->getPC() + 2);
-    this->cpu->setCycles(this->cpu->getCycles() + 2);
-}
-
-void Assembly::aslAHandler()
-{
-    uint8_t result = this->cpu->getAccumulator() << 1;
-    this->cpu->setAccumulator(result);
-
-    this->cpu->getStatus().setCarryFlag(result & 0x01);
-    this->cpu->getStatus().setZeroFlag(result == 0);
-    this->cpu->getStatus().setNegativeFlag(result & 0x80);
-
-    this->cpu->setPC(this->cpu->getPC() + 1);
-    this->cpu->setCycles(this->cpu->getCycles() + 2);
-}
-
-void Assembly::ancImmHandler()
-{
-    uint8_t operand = this->cpu->getMemory(this->cpu->getPC() + 1);
-    this->cpu->setAccumulator(this->cpu->getAccumulator() & operand);
-
-    this->cpu->getStatus().setCarryFlag(this->cpu->getAccumulator() & 0x80);
-
-    this->cpu->setPC(this->cpu->getPC() + 2);
-    this->cpu->setCycles(this->cpu->getCycles() + 2);
-}
-
-void Assembly::nopAbsHandler()
-{
-    this->cpu->setPC(this->cpu->getPC() + 3);
-    this->cpu->setCycles(this->cpu->getCycles() + 4);
 }
 
 void Assembly::oraAbsHandler()
@@ -651,33 +868,40 @@ void Assembly::oraAbsHandler()
     uint8_t value = this->cpu->getMemory(address);
     this->cpu->setAccumulator(this->cpu->getAccumulator() | value);
 
+    this->cpu->getStatus().setZeroFlag(this->cpu->getAccumulator() == 0);
+    this->cpu->getStatus().setNegativeFlag(this->cpu->getAccumulator() & 0x80);
+
     this->cpu->setPC(this->cpu->getPC() + 3);
     this->cpu->setCycles(this->cpu->getCycles() + 4);
 }
 
-void Assembly::aslAbsHandler()
+void Assembly::sloZpHandler()
 {
-    uint16_t address = this->cpu->readMemory16(this->cpu->getPC() + 1);
-    uint8_t value = this->cpu->getMemory(address);
+    uint8_t operand = this->cpu->getMemory(this->cpu->getPC() + 1);
+    uint8_t value = this->cpu->getMemory(operand);
+    this->cpu->getStatus().setCarryFlag(value & 0x80);
     uint8_t result = value << 1;
-    this->cpu->write(address, result);
+    this->cpu->write(operand, result);
 
-    this->cpu->getStatus().setCarryFlag(result & 0x01);
-    this->cpu->getStatus().setZeroFlag(result == 0);
-    this->cpu->getStatus().setNegativeFlag(result & 0x80);
+    this->cpu->setAccumulator(this->cpu->getAccumulator() | result);
+    this->cpu->getStatus().setZeroFlag(this->cpu->getAccumulator() == 0);
+    this->cpu->getStatus().setNegativeFlag(this->cpu->getAccumulator() & 0x80);
 
-    this->cpu->setPC(this->cpu->getPC() + 3);
-    this->cpu->setCycles(this->cpu->getCycles() + 6);
+    this->cpu->setPC(this->cpu->getPC() + 2);
+    this->cpu->setCycles(this->cpu->getCycles() + 5);
 }
 
 void Assembly::sloAbsHandler()
 {
     uint16_t address = this->cpu->readMemory16(this->cpu->getPC() + 1);
     uint8_t value = this->cpu->getMemory(address);
+    this->cpu->getStatus().setCarryFlag(value & 0x80);
     uint8_t result = value << 1;
     this->cpu->write(address, result);
 
     this->cpu->setAccumulator(this->cpu->getAccumulator() | result);
+    this->cpu->getStatus().setZeroFlag(this->cpu->getAccumulator() == 0);
+    this->cpu->getStatus().setNegativeFlag(this->cpu->getAccumulator() & 0x80);
 
     this->cpu->setPC(this->cpu->getPC() + 3);
     this->cpu->setCycles(this->cpu->getCycles() + 6);
@@ -685,41 +909,17 @@ void Assembly::sloAbsHandler()
 
 void Assembly::bplHandler()
 {
-    uint8_t offset = this->cpu->getMemory(this->cpu->getPC() + 1);
+    int8_t offset = static_cast<int8_t>(this->cpu->getMemory(this->cpu->getPC() + 1));
     if (!this->cpu->getStatus().getNegativeFlag())
     {
-        this->cpu->setPC(this->cpu->getPC() + 2 + (int8_t)offset);
+        this->cpu->setPC(this->cpu->getPC() + 2 + offset);
+        this->cpu->setCycles(this->cpu->getCycles() + 4);
     }
     else
     {
         this->cpu->setPC(this->cpu->getPC() + 2);
+        this->cpu->setCycles(this->cpu->getCycles() + 2);
     }
-    this->cpu->setCycles(this->cpu->getCycles() + 3);
-}
-
-void Assembly::oraIzyHandler()
-{
-    uint8_t operand = this->cpu->getMemory(this->cpu->getPC() + 1);
-    uint16_t address = operand + this->cpu->getYRegister();
-    uint8_t value = this->cpu->getMemory(address);
-    this->cpu->setAccumulator(this->cpu->getAccumulator() | value);
-
-    this->cpu->setPC(this->cpu->getPC() + 2);
-    this->cpu->setCycles(this->cpu->getCycles() + 5);
-}
-
-void Assembly::sloIzyHandler()
-{
-    uint8_t operand = this->cpu->getMemory(this->cpu->getPC() + 1);
-    uint16_t address = operand + this->cpu->getYRegister();
-    uint8_t value = this->cpu->getMemory(address);
-    uint8_t result = value << 1;
-    this->cpu->write(address, result);
-
-    this->cpu->setAccumulator(this->cpu->getAccumulator() | result);
-
-    this->cpu->setPC(this->cpu->getPC() + 2);
-    this->cpu->setCycles(this->cpu->getCycles() + 8);
 }
 
 void Assembly::jsrAbsHandler()
@@ -728,8 +928,8 @@ void Assembly::jsrAbsHandler()
 
     uint16_t returnAddress = this->cpu->getPC() + 2;
 
-    this->cpu->pushStack(returnAddress >> 8);   // MSB (Most Significant Bit)
-    this->cpu->pushStack(returnAddress & 0xFF); // LSB (Least Significant Bit)
+    this->cpu->pushStack(returnAddress >> 8);
+    this->cpu->pushStack(returnAddress & 0xFF);
     this->cpu->setPC(address);
 
     this->cpu->setCycles(this->cpu->getCycles() + 6);
@@ -757,6 +957,23 @@ void Assembly::rlaIzxHandler()
     this->cpu->setCycles(this->cpu->getCycles() + 8);
 }
 
+void Assembly::phpHandler()
+{
+    uint8_t status = this->cpu->getStatus().getP();
+    this->cpu->pushStack(status);
+
+    this->cpu->setPC(this->cpu->getPC() + 1);
+    this->cpu->setCycles(this->cpu->getCycles() + 3);
+}
+
+void Assembly::nopZpHandler()
+{
+    uint8_t operand = this->cpu->read(this->cpu->getPC() + 1);
+
+    this->cpu->setPC(this->cpu->getPC() + 2);
+    this->cpu->setCycles(2);
+}
+
 void Assembly::bitZpHandler()
 {
     uint8_t operand = this->cpu->getMemory(this->cpu->getPC() + 1);
@@ -781,6 +998,12 @@ void Assembly::andZpHandler()
     this->cpu->setCycles(this->cpu->getCycles() + 3);
 }
 
+void Assembly::nopAbsHandler()
+{
+    this->cpu->setPC(this->cpu->getPC() + 3);
+    this->cpu->setCycles(this->cpu->getCycles() + 4);
+}
+
 void Assembly::rolZpHandler()
 {
     uint8_t operand = this->cpu->getMemory(this->cpu->getPC() + 1);
@@ -792,6 +1015,79 @@ void Assembly::rolZpHandler()
 
     this->cpu->setPC(this->cpu->getPC() + 2);
     this->cpu->setCycles(this->cpu->getCycles() + 5);
+}
+
+void Assembly::bvcHandler()
+{
+    uint8_t operand = this->cpu->getMemory(this->cpu->getPC() + 1);
+    if (!this->cpu->getStatus().getOverflowFlag())
+    {
+
+        int8_t offset = static_cast<int8_t>(operand);
+        this->cpu->setPC(this->cpu->getPC() + 2 + offset);
+    }
+    else
+    {
+
+        this->cpu->setPC(this->cpu->getPC() + 2);
+    }
+
+    this->cpu->setCycles(this->cpu->getCycles() + 2);
+}
+
+void Assembly::rorAHandler()
+{
+    bool carry = this->cpu->getStatus().getCarryFlag();
+    uint8_t accumulator = this->cpu->getAccumulator();
+    uint8_t result = (accumulator >> 1) | (carry << 7);
+
+    this->cpu->getStatus().setCarryFlag(accumulator & 0x01);
+
+    this->cpu->setAccumulator(result);
+
+    this->cpu->getStatus().setZeroFlag(result);
+    this->cpu->getStatus().setNegativeFlag(result);
+
+    this->cpu->setPC(this->cpu->getPC() + 1);
+    this->cpu->setCycles(this->cpu->getCycles() + 2);
+}
+
+void Assembly::rraImmHandler()
+{
+    uint8_t operand = this->cpu->getMemory(this->cpu->getPC() + 1);
+    bool carry = this->cpu->getStatus().getCarryFlag();
+    uint8_t result = (operand >> 1) | (carry << 7);
+
+    this->cpu->getStatus().setCarryFlag(operand & 0x01);
+
+    uint8_t accumulator = this->cpu->getAccumulator();
+    uint8_t sum = accumulator + result + (carry ? 1 : 0);
+
+    this->cpu->setAccumulator(sum);
+    this->cpu->getStatus().setZeroFlag(sum);
+    this->cpu->getStatus().setNegativeFlag(sum);
+    this->cpu->getStatus().setCarryFlag(sum);
+    this->cpu->getStatus().setOverflowFlagAOR(accumulator, result, sum);
+
+    this->cpu->setPC(this->cpu->getPC() + 2);
+    this->cpu->setCycles(this->cpu->getCycles() + 6);
+}
+
+void Assembly::ancImmHandler()
+{
+    uint8_t operand = this->cpu->getMemory(this->cpu->getPC() + 1);
+    uint8_t result = this->cpu->getAccumulator() & operand;
+    this->cpu->setAccumulator(result);
+
+    bool carry = result & 0x80;
+    this->cpu->getStatus().setCarryFlag(carry);
+
+    this->cpu->getStatus().setNegativeFlag(result);
+
+    this->cpu->getStatus().setZeroFlag(result);
+
+    this->cpu->setPC(this->cpu->getPC() + 2);
+    this->cpu->setCycles(this->cpu->getCycles() + 2);
 }
 
 void Assembly::rlaZpHandler()
@@ -911,6 +1207,39 @@ void Assembly::andIzyHandler()
     this->cpu->setCycles(this->cpu->getCycles() + 5);
 }
 
+void Assembly::rlaImmHandler()
+{
+    uint8_t value = this->cpu->getMemory(this->cpu->getPC() + 1);
+
+    uint8_t result = (value << 1) | this->cpu->getStatus().getCarryFlag();
+
+    this->cpu->getStatus().setCarryFlag(value & 0x80);
+    this->cpu->setAccumulator(this->cpu->getAccumulator() & result);
+    this->cpu->setPC(this->cpu->getPC() + 2);
+    this->cpu->setCycles(this->cpu->getCycles() + 2);
+    this->cpu->getStatus().setZeroFlag(this->cpu->getAccumulator());
+    this->cpu->getStatus().setNegativeFlag(this->cpu->getAccumulator());
+}
+
+void Assembly::bmiHandler()
+{
+
+    int8_t operand = static_cast<int8_t>(this->cpu->getMemory(this->cpu->getPC() + 1));
+
+    if (this->cpu->getStatus().getNegativeFlag())
+    {
+
+        this->cpu->setPC(this->cpu->getPC() + 2 + operand);
+    }
+    else
+    {
+
+        this->cpu->setPC(this->cpu->getPC() + 2);
+    }
+
+    this->cpu->setCycles(this->cpu->getCycles() + 2 + (this->cpu->getPC() != operand ? 0 : 1));
+}
+
 void Assembly::rlaIzyHandler()
 {
     uint8_t operand = this->cpu->getMemory(this->cpu->getPC() + 1);
@@ -926,10 +1255,52 @@ void Assembly::rlaIzyHandler()
     this->cpu->setCycles(this->cpu->getCycles() + 8);
 }
 
+void Assembly::lsrAHandler()
+{
+
+    uint8_t accumulator = this->cpu->getAccumulator();
+
+    bool carry = accumulator & 0x01;
+
+    accumulator >>= 1;
+
+    this->cpu->setAccumulator(accumulator);
+
+    this->cpu->getStatus().setCarryFlag(carry);
+
+    this->cpu->getStatus().setZeroFlag(accumulator);
+    this->cpu->getStatus().setNegativeFlag(accumulator);
+
+    this->cpu->setPC(this->cpu->getPC() + 1);
+    this->cpu->setCycles(this->cpu->getCycles() + 2);
+}
+
 void Assembly::nopZpxHandler()
 {
     this->cpu->setPC(this->cpu->getPC() + 2);
     this->cpu->setCycles(this->cpu->getCycles() + 4);
+}
+
+void Assembly::sreImmHandler()
+{
+
+    uint8_t operand = this->cpu->getMemory(this->cpu->getPC() + 1);
+
+    bool carry = operand & 0x01;
+    uint8_t result = operand >> 1;
+
+    this->cpu->getStatus().setCarryFlag(carry);
+
+    uint8_t accumulator = this->cpu->getAccumulator();
+    this->cpu->setAccumulator(accumulator ^ result);
+
+    this->cpu->write(this->cpu->getPC() + 1, result);
+
+    this->cpu->getStatus().setZeroFlag(this->cpu->getAccumulator());
+    this->cpu->getStatus().setNegativeFlag(this->cpu->getAccumulator());
+
+    this->cpu->setPC(this->cpu->getPC() + 2);
+    this->cpu->setCycles(this->cpu->getCycles() + 6);
 }
 
 void Assembly::andZpxHandler()
@@ -2245,6 +2616,19 @@ void Assembly::arrImHandler()
     this->cpu->setCycles(this->cpu->getCycles() + 2);
 }
 
+void Assembly::oraIzxHandler()
+{
+    uint8_t operand = this->cpu->getMemory(this->cpu->getPC() + 1);
+    uint8_t addressLow = this->cpu->getMemory(operand + this->cpu->getXRegister());
+    uint8_t addressHigh = this->cpu->getMemory(operand + this->cpu->getXRegister() + 1);
+    uint16_t address = (addressHigh << 8) | addressLow;
+    uint8_t value = this->cpu->getMemory(address);
+    this->cpu->setAccumulator(this->cpu->getAccumulator() | value);
+
+    this->cpu->setPC(this->cpu->getPC() + 2);
+    this->cpu->setCycles(this->cpu->getCycles() + 6);
+}
+
 void Assembly::ahxAbsHandler()
 {
     uint8_t operand = this->cpu->getMemory(this->cpu->getPC() + 1);
@@ -2522,9 +2906,9 @@ void Assembly::rraAbsHandler()
 
 void Assembly::crashHandler()
 {
+    uint8_t lastOpcodeRead = this->lastOpcode;
 
-    std::cerr << "Unexpected opcode (crashHandler)!" << std::endl;
-    std::exit(1);
+    cerr << "Unexpected opcode (0x" << hex << (int)lastOpcodeRead << ") in crashHandler!" << endl;
 }
 
 void Assembly::rraAbyHandler()
@@ -3600,19 +3984,17 @@ void Assembly::sbcAbxHandler()
 void Assembly::incAbxHandler()
 {
     uint8_t operand = this->cpu->getMemory(this->cpu->getPC() + 1);
-    uint8_t address = operand + this->cpu->getXRegister();
-    uint8_t value = this->cpu->getMemory(address);
+    uint16_t address = operand + this->cpu->getXRegister();
 
+    uint8_t value = this->cpu->getMemory(address);
     value++;
     this->cpu->write(address, value);
-
     this->cpu->getStatus().setZeroFlag(value == 0);
     this->cpu->getStatus().setNegativeFlag(value & 0x80);
 
     this->cpu->setPC(this->cpu->getPC() + 2);
     this->cpu->setCycles(this->cpu->getCycles() + 7);
 }
-
 void Assembly::iscAbxHandler()
 {
     uint8_t operand = this->cpu->getMemory(this->cpu->getPC() + 1);
@@ -3628,4 +4010,37 @@ void Assembly::iscAbxHandler()
 
     this->cpu->setPC(this->cpu->getPC() + 2);
     this->cpu->setCycles(this->cpu->getCycles() + 7);
+}
+
+void Assembly::oraIzyHandler()
+{
+    uint8_t operand = this->cpu->getMemory(this->cpu->getPC() + 1);
+    uint16_t baseAddress = this->cpu->getMemory(operand) | (this->cpu->getMemory((operand + 1) & 0xFF) << 8);
+    uint16_t address = baseAddress + this->cpu->getYRegister();
+    uint8_t value = this->cpu->getMemory(address);
+
+    this->cpu->setAccumulator(this->cpu->getAccumulator() | value);
+    this->cpu->getStatus().setZeroFlag(this->cpu->getAccumulator() == 0);
+    this->cpu->getStatus().setNegativeFlag(this->cpu->getAccumulator() & 0x80);
+
+    this->cpu->setPC(this->cpu->getPC() + 2);
+    this->cpu->setCycles(this->cpu->getCycles() + 5);
+}
+
+void Assembly::sloIzyHandler()
+{
+    uint8_t operand = this->cpu->getMemory(this->cpu->getPC() + 1);
+    uint16_t baseAddress = this->cpu->getMemory(operand) | (this->cpu->getMemory((operand + 1) & 0xFF) << 8);
+    uint16_t address = baseAddress + this->cpu->getYRegister();
+    uint8_t value = this->cpu->getMemory(address);
+    this->cpu->getStatus().setCarryFlag(value & 0x80);
+    uint8_t result = value << 1;
+    this->cpu->write(address, result);
+
+    this->cpu->setAccumulator(this->cpu->getAccumulator() | result);
+    this->cpu->getStatus().setZeroFlag(this->cpu->getAccumulator() == 0);
+    this->cpu->getStatus().setNegativeFlag(this->cpu->getAccumulator() & 0x80);
+
+    this->cpu->setPC(this->cpu->getPC() + 2);
+    this->cpu->setCycles(this->cpu->getCycles() + 8);
 }

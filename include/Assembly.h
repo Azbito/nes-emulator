@@ -1,3 +1,11 @@
+/**==========================================================================**\
+ * *                               INFO                                        *
+ *   This code was made following the table created by nesdev.org              *
+ *   URL: https://www.nesdev.org/wiki/Visual6502wiki/6502_all_256_Opcodes      *
+ *                                                                             *
+ *                                                                             *
+ *===========================================================================**/
+
 #ifndef ASSEMBLY_H
 #define ASSEMBLY_H
 
@@ -18,6 +26,7 @@ public:
 
     static map<uint8_t, function<void(Assembly &)>> opcodeMap;
     void executeOpcode(uint8_t opcode);
+    void handleOpcode(uint8_t opcode);
     void brkHandler();
     void oraIzxHandler();
     void sloIzxHandler();
@@ -244,9 +253,18 @@ public:
     void sbcAbxHandler();
     void incAbxHandler();
     void iscAbxHandler();
+    void rlaImmHandler();
+    void bmiHandler();
+    void lstAHandler();
+    void sreImmHandler();
+    void bvcHandler();
+    void rorAHandler();
+    void rraImmHandler();
+    void lsrAHandler();
 
 private:
     CPU6502 *cpu;
+    uint8_t lastOpcode = 0;
 };
 
 #endif // ASSEMBLY_H

@@ -23,7 +23,7 @@ public:
         CPU6502 *cpu = new CPU6502();
 
         Assembly assembly(cpu);
-        PPU ppu(cpu);
+        PPU ppu;
 
         cpu->setAssembly(&assembly);
 
@@ -59,7 +59,7 @@ public:
             while (cyclesToExecute > 0)
             {
                 cpu->execute();
-                // cout << "Executing opcode at PC: " << hex << cpu->getPC() << dec << endl;
+                cout << "Executing opcode at PC: " << hex << cpu->getPC() << dec << endl;
                 cyclesToExecute -= cpu->getCycles();
             }
 

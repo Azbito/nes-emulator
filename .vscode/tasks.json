@@ -16,9 +16,9 @@
         "-I",
         "D:/Emulators/nes-emulator/include",
         "-I",
-        "C:/Users/azbit/Downloads/SDL2/include",
+        "C:/Users/azbit/Downloads/SDL/include",
         "-L",
-        "C:/Users/azbit/Downloads/SDL2/lib/x64",
+        "C:/Users/azbit/Downloads/SDL/lib/x64",
         "-lSDL2",
         "-o",
         "D:/Emulators/nes-emulator/main.exe"

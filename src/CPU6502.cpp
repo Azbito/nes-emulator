@@ -9,7 +9,7 @@ uint8_t CPU6502::read(uint16_t address)
 void CPU6502::write(uint16_t address, uint8_t value)
 {
     memory[address] = value;
-};
+}
 
 uint16_t CPU6502::popStackWord()
 {
@@ -64,21 +64,23 @@ void CPU6502::triggerTrap()
 
 void CPU6502::execute()
 {
-    // cout << "PC before fetch: 0x" << hex << PC << endl;
+    cout << "PC before fetch: 0x" << hex << PC << endl;
 
     uint8_t opcode = memory[PC];
-    cycles = 0;
-    // cout << "Opcode at PC (0x" << hex << PC << "): "
-    //  << setw(2) << setfill('0') << static_cast<int>(opcode) << endl;
 
-    // cout << "PC after fetch: 0x" << hex << PC << endl;
+    cycles = 0;
+    cout << "Opcode at PC (0x" << hex << PC << "): "
+         << setw(2) << setfill('0') << static_cast<int>(opcode) << endl;
+
+    cout
+        << "PC after fetch: 0x" << hex << PC << endl;
 
     uint16_t pc = getPC();
-    // cout << "getPC returned: 0x" << hex << pc << endl;
+    cout << "getPC returned: 0x" << hex << pc << endl;
 
     setPC(pc + 1);
 
-    // cout << "PC after increment: 0x" << hex << getPC() << endl;
+    cout << "PC after increment: 0x" << hex << getPC() << endl;
 
     assembly->executeOpcode(opcode);
 }
@@ -147,6 +149,6 @@ void CPU6502::mapMemory(const vector<uint8_t> &PRG)
 
     this->PC = 0x8000;
 
-    // cout << "Memory mapped. PRG ROM loaded at 0x8000." << endl;
-    // cout << "Reset vector at 0xFFFC-0xFFFD points to: 0x" << hex << resetVector << dec << endl;
+    cout << "Memory mapped. PRG ROM loaded at 0x8000." << endl;
+    cout << "Reset vector at 0xFFFC-0xFFFD points to: 0x" << hex << resetVector << dec << endl;
 }
