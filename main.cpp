@@ -1,11 +1,24 @@
 #include <windows.h>
-#include "Emulator.hpp"
+#include "CPU6502.h"
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+using namespace std;
+
+// int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+int main()
 {
-    Emulator emu;
+    CPU6502 cpu;
+    CPU6502::Memory memory;
 
-    emu.start();
+    cpu.reset(memory);
+
+    //! fake program
+    memory.writeOperator(0xFFFC, 0xA9);
+    memory.writeOperator(0xFFFD, 0xA2);
+    //!
+
+    // cpu.execute(2, memory);
+
+    system("pause");
 
     return 0;
 }

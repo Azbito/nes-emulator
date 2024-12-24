@@ -1,6 +1,7 @@
 {
   "C_Cpp.errorSquiggles": "disabled",
   "files.associations": {
+    "*.embeddedhtml": "html",
     ".env*": "env",
     "*.tf": "terraform",
     "*.tfvars": "terraform-vars",
@@ -67,6 +68,7 @@
     "cinttypes": "cpp",
     "typeinfo": "cpp",
     "variant": "cpp",
-    "cstring": "cpp"
+    "cstring": "cpp",
+    "text_encoding": "cpp"
   }
 }
