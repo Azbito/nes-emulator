@@ -7,20 +7,15 @@
       "args": [
         "-fdiagnostics-color=always",
         "-g",
-        "D:/Emulators/nes-emulator/main.cpp",
-        "D:/Emulators/nes-emulator/src/CPU6502.cpp",
-        "D:/Emulators/nes-emulator/src/NES.cpp",
-        "D:/Emulators/nes-emulator/src/Window.cpp",
-        "D:/Emulators/nes-emulator/src/PPU.cpp",
+        "${workspaceFolder}/main.cpp",
+        "${workspaceFolder}/src/CPU/CPU6502.cpp",
+        "${workspaceFolder}/src/JIT/Compiler.cpp",
         "-I",
-        "D:/Emulators/nes-emulator/include",
-        "-I",
-        "C:/Users/azbit/Downloads/SDL/include",
-        "-L",
-        "C:/Users/azbit/Downloads/SDL/lib/x64",
-        "-lSDL2",
+        "${workspaceFolder}/src/CPU",
+        "${workspaceFolder}/src/JIT",
+        "${workspaceFolder}/src/Memory",
         "-o",
-        "D:/Emulators/nes-emulator/main.exe"
+        "${workspaceFolder}/main.exe"
       ],
       "options": {
         "cwd": "${fileDirname}"

@@ -1,24 +1,43 @@
-#include <windows.h>
-#include "CPU6502.h"
+#include "CPU/CPU6502.h"
+#include "JIT/Compiler.h"
+#include "ROM/Loader.h"
+#include <iostream>
 
-using namespace std;
+#define JIT_BUFFER_SZ 4096
+#define INIT_ADDRESS 0x8000
 
-// int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
-int main()
+int main(int argc, char *argv[])
 {
+    if (argc < 2)
+    {
+        return 1;
+    }
+
+    ROMLoader rom;
+
+    if (!rom.load(argv[1]))
+    {
+        return 1;
+    }
+
     CPU6502 cpu;
-    CPU6502::Memory memory;
+    JITCompiler jit(JIT_BUFFER_SZ);
 
-    cpu.reset(memory);
+    const auto &romData = rom.getData();
 
-    //! fake program
-    memory.writeOperator(0xFFFC, 0xA9);
-    memory.writeOperator(0xFFFD, 0xA2);
-    //!
+    for (size_t i = 0; i < romData.size(); ++i)
+    {
+        cpu.RAM[i] = romData[i];
+    }
 
-    // cpu.execute(2, memory);
+    cpu.PC = INIT_ADDRESS;
 
-    system("pause");
+    while (true)
+    {
+        uint8_t opcode = cpu.RAM[cpu.PC];
+
+        jit.compileOpcode(opcode, cpu);
+    }
 
     return 0;
 }

@@ -28,7 +28,11 @@
         "trace": true
       },
       "sourceFileMap": {
-        "/usr/include": "${workspaceFolder}/include"
+        "/usr/include": [
+          "${workspaceFolder}/src/CPU",
+          "${workspaceFolder}/src/JIT",
+          "${workspaceFolder}/src/Memory"
+        ]
       },
       "debugServerArgs": "",
       "serverStarted": "",

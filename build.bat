@@ -1,0 +1,1 @@
+"C:\msys64\ucrt64\bin\g++.exe" -fdiagnostics-color=always -g D:/nes-emulator/main.cpp D:/nes-emulator/src/CPU/CPU6502.cpp D:/nes-emulator/src/Assembly/Instructions.cpp D:/nes-emulator/src/JIT/Compiler.cpp D:/nes-emulator/src/ROM/Loader.cpp -I D:/nes-emulator/src -o D:/nes-emulator/main.exe
