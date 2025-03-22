@@ -6,9 +6,8 @@
         "${workspaceFolder}/**",
         "D:/mingw/mingw64/include",
         "D:/mingw/ucrt64/include",
-        "${workspaceFolder}/src/CPU",
-        "${workspaceFolder}/src/JIT",
-        "${workspaceFolder}/src/Memory"
+        "${workspaceFolder}/src",
+        "D:/SDL3-3.2.8/include"
       ],
       "defines": ["_DEBUG", "UNICODE", "_UNICODE"],
       "compilerPath": "D:\\mingw\\ucrt64\\bin\\gcc.exe",

@@ -31,6 +31,5 @@ void JITCompiler::compileOpcode(uint8_t opcode, CPU6502 &cpu)
     {
         std::cerr << "Opcode not implemented: " << std::hex << +opcode
                   << std::endl;
-        cpu.PC++;
     }
 }

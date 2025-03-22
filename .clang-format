@@ -4,3 +4,4 @@ NamespaceIndentation: Inner
 BreakBeforeBraces: Allman
 AllowShortFunctionsOnASingleLine: false
 ColumnLimit: 80
+IncludeBlocks: Preserve

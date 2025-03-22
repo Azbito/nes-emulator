@@ -10,10 +10,10 @@
         "${workspaceFolder}/main.cpp",
         "${workspaceFolder}/src/CPU/CPU6502.cpp",
         "${workspaceFolder}/src/JIT/Compiler.cpp",
+        "${workspaceFolder}/src/Assembly/Instructions.cpp",
+        "${workspaceFolder}/src/ROM/Loader.cpp",
         "-I",
-        "${workspaceFolder}/src/CPU",
-        "${workspaceFolder}/src/JIT",
-        "${workspaceFolder}/src/Memory",
+        "${workspaceFolder}/src",
         "-o",
         "${workspaceFolder}/main.exe"
       ],

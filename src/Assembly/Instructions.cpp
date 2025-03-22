@@ -93,7 +93,6 @@ void Instructions::handleEORZP(CPU6502 &cpu)
 void Instructions::handleKIL(CPU6502 &cpu)
 {
     printf("I'm dead x.x");
-    system("pause");
 }
 
 void Instructions::handleLSRAbsolute(CPU6502 &cpu)

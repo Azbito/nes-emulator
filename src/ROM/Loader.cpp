@@ -2,6 +2,8 @@
 
 bool ROMLoader::load(const std::string &filename)
 {
+    printf("[SYSTEM] Running emulator... \n");
+
     std::ifstream file(filename, std::ios::binary | std::ios::ate);
 
     if (!file.is_open())
@@ -22,6 +24,7 @@ bool ROMLoader::load(const std::string &filename)
         return false;
     }
 
+    printf("\033[1;32m[SYSTEM] ROM loaded successfully!\033[0m\n");
     return true;
 }
 
