@@ -19,6 +19,9 @@ JITCompiler::JITCompiler(size_t bufferSize)
     opcodeTable[0x2] = &Instructions::handleKIL;
     opcodeTable[0x1] = &Instructions::handleORAIndirectIndexedX;
     opcodeTable[0x4E] = &Instructions::handleLSRAbsolute;
+    opcodeTable[0x78] = &Instructions::handleSEI;
+    opcodeTable[0xD8] = &Instructions::handleCLD;
+    opcodeTable[0x8D] = &Instructions::handleSTA;
 }
 
 void JITCompiler::compileOpcode(uint8_t opcode, CPU6502 &cpu)
@@ -29,7 +32,8 @@ void JITCompiler::compileOpcode(uint8_t opcode, CPU6502 &cpu)
     }
     else
     {
-        std::cerr << "Opcode not implemented: " << std::hex << +opcode
-                  << std::endl;
+        printf("\033[1;31m[SYSTEM] Opcode not implemented: %02x \033[0m\n",
+               +opcode);
+        system("pause");
     }
 }

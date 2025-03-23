@@ -9,24 +9,26 @@
 
 #define JIT_BUFFER_SZ 4096
 #define INIT_ADDRESS 0x8000
-#define MB_16 16384
+#define KB_16 16384
 
-class PRGLoader
+class PRG
 {
   public:
-    PRGLoader(const std::vector<uint8_t> &romData, CPU6502 &cpu)
+    PRG(const std::vector<uint8_t> &romData, CPU6502 &cpu)
         : romData(romData), cpu(cpu)
     {
     }
 
-    bool loadPRG(uint8_t prgBanks)
+    bool load(uint8_t prgBanks)
     {
         size_t prgStart = 16;
-        size_t prgSize = prgBanks * MB_16;
+        size_t prgSize = prgBanks * KB_16;
 
-        if (prgStart + prgSize > romData.size())
+        if (prgSize < 16 + 16384)
         {
-            std::cerr << "ROM file too small." << std::endl;
+            printf(
+                "\033[1;31m[SYSTEM] ROM is too small. ROM Size: %i \033[0m\n",
+                romData.size());
             return false;
         }
 

@@ -1,6 +1,9 @@
 #include "ROM/Loader.h"
+#include "ROM/PPU.h"
+#include <fstream>
+#include <iostream>
 
-bool ROMLoader::load(const std::string &filename)
+bool ROMLoader::load(const std::string &filename, ROM &rom)
 {
     printf("[SYSTEM] Running emulator... \n");
 
@@ -13,33 +16,53 @@ bool ROMLoader::load(const std::string &filename)
 
     size_t fileSize = file.tellg();
 
-    m_data.resize(fileSize);
+    std::vector<uint8_t> fileData;
+    fileData.resize(fileSize);
 
     file.seekg(0, std::ios::beg);
-    file.read(reinterpret_cast<char *>(m_data.data()), fileSize);
+    file.read(reinterpret_cast<char *>(fileData.data()), fileSize);
     file.close();
 
-    if (!verify())
+    if (!verify(fileData))
     {
+        printf("\033[1;31m[SYSTEM] Invalid ROM.\033[0m\n");
         return false;
     }
+    printf("\033[1;32m[SYSTEM] Valid ROM.\033[0m\n");
+
+    size_t prgSize = 16384 * fileData[4];
+    size_t chrSize = (fileSize > prgSize) ? (fileSize - prgSize) : 0;
+
+    std::vector<uint8_t> prgData(fileData.begin(), fileData.begin() + prgSize);
+    std::vector<uint8_t> chrData(fileData.begin() + prgSize, fileData.end());
+
+    rom.setPRGData(prgData);
+    rom.setCHRData(chrData);
+    rom.setROMName(filename.c_str());
 
     printf("\033[1;32m[SYSTEM] ROM loaded successfully!\033[0m\n");
+
     return true;
 }
 
-const std::vector<uint8_t> &ROMLoader::getData() const
+void ROMLoader::loadChrRom(ROM &rom, PPU &ppu)
 {
-    return m_data;
+    const std::vector<uint8_t> &CHR = rom.getCHRData();
+
+    for (size_t i = 0; i < CHR.size(); ++i)
+    {
+        ppu.setMemory(i, CHR[i]);
+    }
 }
 
-bool ROMLoader::verify() const
+bool ROMLoader::verify(const std::vector<uint8_t> &data) const
 {
-    if (m_data.size() < 16)
+    printf("[SYSTEM] Validating ROM file... \n");
+
+    if (data.size() < 16)
     {
         return false;
     }
-
-    return m_data[0] == 'N' && m_data[1] == 'E' && m_data[2] == 'S' &&
-           m_data[3] == 0x1A;
+    return data[0] == 'N' && data[1] == 'E' && data[2] == 'S' &&
+           data[3] == 0x1A;
 }

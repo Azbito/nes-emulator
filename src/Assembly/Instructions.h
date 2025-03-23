@@ -19,6 +19,9 @@ class Instructions
     void handleORAIndirectIndexedX(CPU6502 &cpu);
     void handleKIL(CPU6502 &cpu);
     void handleLSRAbsolute(CPU6502 &cpu);
+    void handleSEI(CPU6502 &cpu);
+    void handleCLD(CPU6502 &cpu);
+    void handleSTA(CPU6502 &cpu);
 };
 
 #endif

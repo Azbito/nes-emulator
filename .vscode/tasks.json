@@ -12,13 +12,16 @@
         "${workspaceFolder}/src/JIT/Compiler.cpp",
         "${workspaceFolder}/src/Assembly/Instructions.cpp",
         "${workspaceFolder}/src/ROM/Loader.cpp",
+        "${workspaceFolder}/src/Screen/Renderer.cpp",
+        "${workspaceFolder}/src/ROM/PPU.cpp",
+        "${workspaceFolder}/src/JIT/Compiler.cpp",
         "-I",
         "${workspaceFolder}/src",
         "-o",
         "${workspaceFolder}/main.exe"
       ],
       "options": {
-        "cwd": "${fileDirname}"
+        "cwd": "${fileDirname} './smb.nes'"
       },
       "problemMatcher": ["$gcc"],
       "group": "build",

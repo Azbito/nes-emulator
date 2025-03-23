@@ -90,9 +90,31 @@ void Instructions::handleEORZP(CPU6502 &cpu)
     cpu.PC += 2;
 }
 
+void Instructions::handleSTA(CPU6502 &cpu)
+{
+    uint16_t address =
+        cpu.readMemory(cpu.PC + 1) | (cpu.readMemory(cpu.PC + 2) << 8);
+
+    cpu.writeMemory(address, cpu.A);
+
+    cpu.PC += 3;
+}
+
 void Instructions::handleKIL(CPU6502 &cpu)
 {
     printf("I'm dead x.x");
+}
+
+void Instructions::handleCLD(CPU6502 &cpu)
+{
+    cpu.P &= ~0x08;
+    cpu.PC++;
+}
+
+void Instructions::handleSEI(CPU6502 &cpu)
+{
+    cpu.P |= 0x04;
+    cpu.PC++;
 }
 
 void Instructions::handleLSRAbsolute(CPU6502 &cpu)

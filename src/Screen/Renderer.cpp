@@ -1,11 +1,10 @@
-#include "PPU/Renderer.h"
-#include <cstdio>
+#include "Screen/Renderer.h"
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
+#include <cstdio>
 
-
-using PixelColor = uint32_t; // Definir um alias para uint32_t
-using Color = ALLEGRO_COLOR; // Definir um alias para ALLEGRO_COLOR
+using PixelColor = uint32_t;
+using Color = ALLEGRO_COLOR;
 
 Renderer::Renderer(int width, int height)
     : m_width(width), m_height(height), m_display(nullptr)

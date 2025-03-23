@@ -1,9 +1,10 @@
 #include "CPU/CPU6502.h"
 #include "JIT/Compiler.h"
-#include "PPU/PPU.h"
-#include "PPU/Renderer.h"
-#include "PRG/PRG.hpp"
 #include "ROM/Loader.h"
+#include "ROM/PPU.h"
+#include "ROM/PRG.hpp"
+#include "ROM/ROM.hpp"
+#include "Screen/Renderer.h"
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_primitives.h>
@@ -13,7 +14,8 @@
 
 #define JIT_BUFFER_SZ 4096
 #define INIT_ADDRESS 0x8000
-#define MB_16 16384
+#define KB_16 16384
+#define CHR_8KB 8192
 
 int main(int argc, char *argv[])
 {
@@ -43,22 +45,24 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    ROMLoader rom;
-    if (!rom.load(argv[1]))
+    ROMLoader romLoader;
+    ROM rom;
+
+    if (!romLoader.load(argv[1], rom))
     {
         return 1;
     }
 
-    const std::vector<uint8_t> &romData = rom.getData();
+    const std::vector<uint8_t> &romData = rom.getPRGData();
 
     PPU ppu;
     CPU6502 cpu;
     JITCompiler jit(JIT_BUFFER_SZ);
 
     uint8_t prgBanks = romData[4];
-    PRGLoader prgLoader(romData, cpu);
+    PRG prg(romData, cpu);
 
-    if (!prgLoader.loadPRG(prgBanks))
+    if (!prg.load(prgBanks))
     {
         return 1;
     }
@@ -73,21 +77,22 @@ int main(int argc, char *argv[])
     }
 
     cpu.PC = INIT_ADDRESS;
+    romLoader.loadChrRom(rom, ppu);
 
     while (true)
     {
         uint8_t opcode = cpu.RAM[cpu.PC];
         jit.compileOpcode(opcode, cpu);
 
-        std::vector<uint32_t> framebuffer;
-        ppu.updateFramebuffer(framebuffer);
+        // std::vector<uint32_t> framebuffer;
+        // ppu.updateFramebuffer(framebuffer);
 
-        renderer.clearScreen();
-        renderer.renderFrame(framebuffer);
+        // renderer.clearScreen();
+        // renderer.renderFrame(framebuffer);
 
-        renderer.flipDisplay();
+        // renderer.flipDisplay();
 
-        al_rest(0.016);
+        // al_rest(0.016);
     }
 
     return 0;

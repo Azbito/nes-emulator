@@ -46,3 +46,8 @@ uint8_t CPU6502::readMemory(uint16_t addr)
     }
     return 0;
 }
+
+void CPU6502::writeMemory(uint16_t address, uint8_t value)
+{
+    RAM[address] = value;
+}

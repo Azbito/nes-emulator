@@ -6,7 +6,7 @@
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/main.exe",
-      "args": [],
+      "args": ["./smb.nes"],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
       "environment": [],
