@@ -26,10 +26,14 @@ JITCompiler::JITCompiler(size_t bufferSize)
     opcodeTable[0x9A] = &Instructions::handleTXS;
     opcodeTable[0xAD] = &Instructions::handleLDAAbsolute;
     opcodeTable[0x10] = &Instructions::handleBPL;
+    opcodeTable[0xFF] = &Instructions::handleISCAbsoluteX;
 }
 
 void JITCompiler::compileOpcode(uint8_t opcode, CPU6502 &cpu)
 {
+    printf("\nOpcode: 0x%02X\n PC: 0x%04X\n A:0x%02X\n ---------------------",
+           opcode, cpu.PC, cpu.A);
+
     if (opcodeTable[opcode])
     {
         (asm_instructions.*opcodeTable[opcode])(cpu);

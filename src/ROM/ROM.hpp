@@ -42,6 +42,23 @@ class ROM
         m_romName[copyLength] = '\0';
     }
 
+    std::vector<uint8_t> getNametableData() const
+    {
+        std::vector<uint8_t> nametableData;
+
+        for (size_t i = 0x2000; i < 0x2400; ++i)
+        {
+            nametableData.push_back(m_PRGData[i]);
+        }
+
+        for (size_t i = 0x2400; i < 0x2800; ++i)
+        {
+            nametableData.push_back(m_PRGData[i]);
+        }
+
+        return nametableData;
+    }
+
   private:
     std::vector<uint8_t> m_PRGData;
     std::vector<uint8_t> m_CHRData;

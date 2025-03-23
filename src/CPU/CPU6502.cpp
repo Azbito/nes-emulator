@@ -2,7 +2,7 @@
 
 CPU6502::CPU6502() : A(0), X(0), Y(0), P(0x34), SP(0xFD), PC(0x8000)
 {
-    memset(RAM, 0, sizeof(RAM));
+    std::memset(RAM, 0, sizeof(RAM));
 }
 
 void CPU6502::updateZNFlags(uint8_t value)

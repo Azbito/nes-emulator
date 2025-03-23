@@ -26,6 +26,7 @@ class Instructions
     void handleLDAAbsolute(CPU6502 &cpu);
     void handleLDA(CPU6502 &cpu);
     void handleBPL(CPU6502 &cpu);
+    void handleISCAbsoluteX(CPU6502 &cpu);
 
   private:
     uint8_t fetchImmediate(CPU6502 &cpu);

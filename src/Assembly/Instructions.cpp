@@ -7,8 +7,63 @@ void Instructions::handleBPL(CPU6502 &cpu)
     {
         int8_t offset = static_cast<int8_t>(cpu.readMemory(cpu.PC + 1));
         cpu.PC += offset;
+
+        return;
     }
+
     cpu.PC += 2;
+}
+
+void Instructions::handleISCAbsoluteX(CPU6502 &cpu)
+{
+
+    uint16_t address = fetchAbsoluteAddress(cpu) + cpu.X;
+
+    uint8_t value = cpu.readMemory(address);
+    value--;
+    cpu.writeMemory(address, value);
+
+    uint8_t result = cpu.A + value + (cpu.P & 0x01);
+
+    cpu.P &= ~0x01;
+    if (result & 0x80)
+    {
+        cpu.P |= 0x80;
+    }
+    else
+    {
+        cpu.P &= ~0x80;
+    }
+
+    if (result == 0)
+    {
+        cpu.P |= 0x02;
+    }
+    else
+    {
+        cpu.P &= ~0x02;
+    }
+
+    if (((cpu.A ^ value) & (cpu.A ^ result) & 0x80))
+    {
+        cpu.P |= 0x40;
+    }
+    else
+    {
+        cpu.P &= ~0x40;
+    }
+
+    if (result < cpu.A)
+    {
+        cpu.P |= 0x01;
+    }
+    else
+    {
+        cpu.P &= ~0x01;
+    }
+
+    cpu.A = result;
+    cpu.PC += 3;
 }
 
 void Instructions::handleADC(CPU6502 &cpu)

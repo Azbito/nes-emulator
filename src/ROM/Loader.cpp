@@ -45,16 +45,6 @@ bool ROMLoader::load(const std::string &filename, ROM &rom)
     return true;
 }
 
-void ROMLoader::loadChrRom(ROM &rom, PPU &ppu)
-{
-    const std::vector<uint8_t> &CHR = rom.getCHRData();
-
-    for (size_t i = 0; i < CHR.size(); ++i)
-    {
-        ppu.setMemory(i, CHR[i]);
-    }
-}
-
 bool ROMLoader::verify(const std::vector<uint8_t> &data) const
 {
     printf("[SYSTEM] Validating ROM file... \n");

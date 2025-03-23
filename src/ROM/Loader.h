@@ -7,13 +7,11 @@
 #include <fstream>
 #include <vector>
 
-
 class ROMLoader
 {
   public:
     ROMLoader() = default;
 
-    void loadChrRom(ROM &rom, PPU &ppu);
     bool load(const std::string &filename, ROM &rom);
     bool verify(const std::vector<uint8_t> &data) const;
 };

@@ -19,7 +19,6 @@
 
 int main(int argc, char *argv[])
 {
-
     if (argc < 2)
     {
         return 1;
@@ -54,6 +53,8 @@ int main(int argc, char *argv[])
     }
 
     const std::vector<uint8_t> &romData = rom.getPRGData();
+    const std::vector<uint8_t> &chrData = rom.getCHRData();
+    const std::vector<uint8_t> &nametable = rom.getNametableData();
 
     PPU ppu;
     CPU6502 cpu;
@@ -77,22 +78,16 @@ int main(int argc, char *argv[])
     }
 
     cpu.PC = INIT_ADDRESS;
-    romLoader.loadChrRom(rom, ppu);
 
     while (true)
     {
         uint8_t opcode = cpu.RAM[cpu.PC];
         jit.compileOpcode(opcode, cpu);
+        renderer.clearScreen();
+        ppu.renderBackground(renderer, nametable, chrData);
+        renderer.flipDisplay();
 
-        // std::vector<uint32_t> framebuffer;
-        // ppu.updateFramebuffer(framebuffer);
-
-        // renderer.clearScreen();
-        // renderer.renderFrame(framebuffer);
-
-        // renderer.flipDisplay();
-
-        // al_rest(0.016);
+        al_rest(0.016);
     }
 
     return 0;
