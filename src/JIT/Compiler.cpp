@@ -31,8 +31,7 @@ JITCompiler::JITCompiler(size_t bufferSize)
 
 void JITCompiler::compileOpcode(uint8_t opcode, CPU6502 &cpu)
 {
-    printf("\nOpcode: 0x%02X\n PC: 0x%04X\n A:0x%02X\n ---------------------",
-           opcode, cpu.PC, cpu.A);
+    printf("\n 0x%02X", opcode);
 
     if (opcodeTable[opcode])
     {

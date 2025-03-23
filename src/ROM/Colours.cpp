@@ -1,8 +1,7 @@
 #include "ROM/PPU.h"
-#include <allegro5/allegro.h>
 #include <cstdio>
 
-ALLEGRO_COLOR PPU::getNESColor(uint8_t index)
+uint32_t PPU::getNESColor(uint8_t index)
 {
     static const uint32_t NESPalette[64] = {
         0x7C7C7C, 0x0000FC, 0x0000BC, 0x4428BC, 0x940084, 0xA80020, 0xA81000,
@@ -16,6 +15,5 @@ ALLEGRO_COLOR PPU::getNESColor(uint8_t index)
         0xF8D878, 0xD8F878, 0xB8F8B8, 0xB8F8D8, 0x00FCFC, 0xF8D8F8, 0x000000,
         0x000000};
 
-    uint32_t color = NESPalette[index];
-    return al_map_rgb((color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF);
+    return NESPalette[index];
 }

@@ -19,11 +19,7 @@ class PPU
 
     void initializeFramebuffer(int width, int height);
     Dimensions getDimensions();
-    uint32_t *getFramebuffer();
-    void renderBackground(Renderer &renderer,
-                          const std::vector<uint8_t> &nametable,
-                          const std::vector<uint8_t> &chrData);
-    ALLEGRO_COLOR getNESColor(uint8_t index);
+    uint32_t getNESColor(uint8_t index);
 
   private:
     int m_width;

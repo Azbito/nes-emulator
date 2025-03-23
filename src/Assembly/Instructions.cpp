@@ -3,11 +3,18 @@
 
 void Instructions::handleBPL(CPU6502 &cpu)
 {
+    int8_t offset = cpu.readMemory(cpu.PC + 1);
+
+    // Definir um limite para evitar loop infinito
+    if (offset < -10 || offset > 10)
+    {
+        std::cout << "Limiting offset to avoid infinite loop" << std::endl;
+        offset = 0; // Ou qualquer valor que você ache seguro
+    }
+
     if (cpu.isNegativeFlagClean())
     {
-        int8_t offset = static_cast<int8_t>(cpu.readMemory(cpu.PC + 1));
-        cpu.PC += offset;
-
+        cpu.PC += 2 + offset;
         return;
     }
 
