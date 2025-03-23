@@ -18,8 +18,10 @@ class CPU6502
     void pushToStack(uint8_t value);
     void pushToStack16(uint16_t value);
 
-    uint8_t readMemory(uint16_t address);
+    bool isNegativeFlagClean();
+
     void writeMemory(uint16_t address, uint8_t value);
+    uint8_t readMemory(uint16_t address);
 };
 
 #endif

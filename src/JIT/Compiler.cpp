@@ -22,6 +22,10 @@ JITCompiler::JITCompiler(size_t bufferSize)
     opcodeTable[0x78] = &Instructions::handleSEI;
     opcodeTable[0xD8] = &Instructions::handleCLD;
     opcodeTable[0x8D] = &Instructions::handleSTA;
+    opcodeTable[0xA2] = &Instructions::handleLDXImmediate;
+    opcodeTable[0x9A] = &Instructions::handleTXS;
+    opcodeTable[0xAD] = &Instructions::handleLDAAbsolute;
+    opcodeTable[0x10] = &Instructions::handleBPL;
 }
 
 void JITCompiler::compileOpcode(uint8_t opcode, CPU6502 &cpu)
@@ -32,8 +36,8 @@ void JITCompiler::compileOpcode(uint8_t opcode, CPU6502 &cpu)
     }
     else
     {
-        printf("\033[1;31m[SYSTEM] Opcode not implemented: %02x \033[0m\n",
+        printf("\033[1;31m[SYSTEM] Opcode not implemented: 0x%02X \033[0m\n",
                +opcode);
-        system("pause");
+        exit(1);
     }
 }

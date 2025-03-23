@@ -32,6 +32,11 @@ void CPU6502::pushToStack(uint8_t value)
     SP--;
 }
 
+bool CPU6502::isNegativeFlagClean()
+{
+    return (P & 0x80) == 0;
+}
+
 void CPU6502::pushToStack16(uint16_t value)
 {
     pushToStack(static_cast<uint8_t>(value >> 8));
