@@ -27,8 +27,9 @@ class PRG
         if (prgSize < 16 + 16384)
         {
             printf(
-                "\033[1;31m[SYSTEM] ROM is too small. ROM Size: %i \033[0m\n",
+                "\033[1;31m[SYSTEM] ROM is too small. ROM Size: %llu \033[0m\n",
                 romData.size());
+
             return false;
         }
 
