@@ -22,6 +22,13 @@ class CPU6502
 
     void writeMemory(uint16_t address, uint8_t value);
     uint8_t readMemory(uint16_t address);
+
+    uint8_t status() const;
+
+    void setStatus(uint8_t status);
+    void setFlag(uint8_t flag, bool value);
+
+    bool isFlagSet(uint8_t flag) const;
 };
 
 #endif

@@ -2,12 +2,13 @@
 #define OLC_PGE_APPLICATION
 
 #include "CPU/CPU6502.h"
+#include "Emulator/UI.hpp"
 #include "JIT/Compiler.h"
+#include "Libraries/olcPixelGameEngine.h"
 #include "ROM/Loader.h"
 #include "ROM/PPU.h"
 #include "ROM/PRG.hpp"
 #include "ROM/ROM.hpp"
-#include "olcPixelGameEngine.h"
 #include <iostream>
 
 #define JIT_BUFFER_SZ 4096
@@ -21,7 +22,7 @@ class Emulator : public olc::PixelGameEngine
     NESGame()
     {
         sAppName = "NES Emulator with olc::PixelGameEngine";
-    };
+    }
 
   public:
     bool OnUserCreate() override
@@ -32,6 +33,7 @@ class Emulator : public olc::PixelGameEngine
     bool OnUserUpdate(float fElapsedTime) override
     {
         CPU6502 cpu;
+        UI ui;
         JITCompiler jit(JIT_BUFFER_SZ);
 
         ROMLoader romLoader;
@@ -80,6 +82,10 @@ class Emulator : public olc::PixelGameEngine
                     Draw(x, y, olc::Pixel(color, color, color));
                 }
             }
+
+            ui.drawRam(10, 10, cpu);
+            ui.drawCpu(200, 10, cpu);
+            ui.drawCode(200, 70, cpu);
 
             Sleep(16);
         }

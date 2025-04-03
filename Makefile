@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++17 -I./src -I.
+CXXFLAGS = -std=c++17 -I./src
 LDFLAGS = -luser32 -lgdi32 -lopengl32 -lgdiplus -lShlwapi -ldwmapi -lstdc++fs
 SRC_DIR = ./src
 TARGET = emulator.exe

@@ -1,58 +1,69 @@
-#include "CPU/CPU6502.h"
+#include "CPU6502.h"
 
-CPU6502::CPU6502() : A(0), X(0), Y(0), P(0x34), SP(0xFD), PC(0x8000)
+CPU6502::CPU6502()
 {
+    A = X = Y = 0;
+    P = 0;
+    SP = 0xFF;
+    PC = 0x0000;
     std::memset(RAM, 0, sizeof(RAM));
 }
 
 void CPU6502::updateZNFlags(uint8_t value)
 {
-    if (value == 0)
-    {
-        P |= 0x02;
-    }
-    else
-    {
-        P &= ~0x02;
-    }
 
-    if (value & 0x80)
-    {
-        P |= 0x80;
-    }
-    else
-    {
-        P &= ~0x80;
-    }
+    setFlag(0x02, value == 0);
+
+    setFlag(0x80, value & 0x80);
 }
 
 void CPU6502::pushToStack(uint8_t value)
 {
-    RAM[0x100 + SP] = value;
-    SP--;
-}
 
-bool CPU6502::isNegativeFlagClean()
-{
-    return (P & 0x80) == 0;
+    writeMemory(0x0100 + SP--, value);
 }
 
 void CPU6502::pushToStack16(uint16_t value)
 {
-    pushToStack(static_cast<uint8_t>(value >> 8));
-    pushToStack(static_cast<uint8_t>(value & 0xFF));
+
+    pushToStack(value & 0xFF);
+    pushToStack((value >> 8) & 0xFF);
 }
 
-uint8_t CPU6502::readMemory(uint16_t addr)
+bool CPU6502::isNegativeFlagClean()
 {
-    if (addr < 0x10000)
-    {
-        return RAM[addr];
-    }
-    return 0;
+    return !(P & 0x80);
 }
 
 void CPU6502::writeMemory(uint16_t address, uint8_t value)
 {
     RAM[address] = value;
+}
+
+uint8_t CPU6502::readMemory(uint16_t address)
+{
+    return RAM[address];
+}
+
+uint8_t CPU6502::status() const
+{
+    return P;
+}
+
+void CPU6502::setStatus(uint8_t status)
+{
+    P = status;
+}
+
+void CPU6502::setFlag(uint8_t flag, bool value)
+{
+    if (value)
+        P |= flag;
+    else
+        P &= ~flag;
+}
+
+bool CPU6502::isFlagSet(uint8_t flag) const
+{
+    return P & flag;
 }
