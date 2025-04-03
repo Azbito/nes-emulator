@@ -1,8 +1,10 @@
 #ifndef ROM_HPP
 #define ROM_HPP
 
+#include <cstdint>
 #include <cstring>
 #include <vector>
+
 
 class ROM
 {

@@ -46,6 +46,12 @@ uint16_t Instructions::fetchIndirect(CPU6502 &cpu)
     return cpu.readMemory(addr) | (cpu.readMemory(addr + 1) << 8);
 }
 
+int16_t Instructions::fetchRelative(CPU6502 &cpu)
+{
+    int8_t offset = static_cast<int8_t>(cpu.readMemory(cpu.PC + 1));
+    return cpu.PC + 2 + offset;
+}
+
 uint8_t Instructions::fetchIndexedIndirectX(CPU6502 &cpu)
 {
     uint16_t baseAddr = cpu.readMemory(cpu.PC + 1);

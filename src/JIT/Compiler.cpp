@@ -5,8 +5,13 @@ JITCompiler::~JITCompiler() = default;
 
 JITCompiler::JITCompiler(size_t bufferSize)
 {
+    opcodeTable[0xC9] = &Instructions::handleImmCMP;
+    opcodeTable[0xB0] = &Instructions::handleRelBCS;
+    opcodeTable[0xCA] = &Instructions::handleDEX;
     opcodeTable[0x69] = &Instructions::handleADC;
     opcodeTable[0xA9] = &Instructions::handleLDA;
+    opcodeTable[0xBD] = &Instructions::handleAbsXLDA;
+    opcodeTable[0xA0] = &Instructions::handleImmLDY;
     opcodeTable[0x00] = &Instructions::handleBRK;
     opcodeTable[0x19] = &Instructions::handleORAAbsoluteY;
     opcodeTable[0x1A] = &Instructions::handleNOP;
@@ -31,8 +36,6 @@ JITCompiler::JITCompiler(size_t bufferSize)
 
 void JITCompiler::compileOpcode(uint8_t opcode, CPU6502 &cpu)
 {
-    printf("\n 0x%02X", opcode);
-
     if (opcodeTable[opcode])
     {
         (asm_instructions.*opcodeTable[opcode])(cpu);

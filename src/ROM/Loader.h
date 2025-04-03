@@ -1,7 +1,6 @@
 #ifndef LOADER_H
 #define LOADER_H
 
-#include "ROM/PPU.h"
 #include "ROM/ROM.hpp"
 #include <cstdint>
 #include <fstream>

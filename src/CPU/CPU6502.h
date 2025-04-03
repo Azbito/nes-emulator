@@ -1,6 +1,7 @@
 #ifndef CPU6502_H
 #define CPU6502_H
 
+#include "PPU/PPU.hpp"
 #include <cstdint>
 #include <cstring>
 #include <iostream>
@@ -12,7 +13,19 @@ class CPU6502
     uint16_t PC;
     uint8_t RAM[0x10000];
 
-    CPU6502();
+    enum Flags
+    {
+        C = 0x01,
+        Z = 0x02,
+        I = 0x04,
+        D = 0x08,
+        B = 0x10,
+        U = 0x20,
+        V = 0x40,
+        N = 0x80
+    };
+
+    CPU6502(PPU &ppuRef);
 
     void updateZNFlags(uint8_t value);
     void pushToStack(uint8_t value);
@@ -29,6 +42,9 @@ class CPU6502
     void setFlag(uint8_t flag, bool value);
 
     bool isFlagSet(uint8_t flag) const;
+
+  private:
+    PPU *ppu;
 };
 
 #endif

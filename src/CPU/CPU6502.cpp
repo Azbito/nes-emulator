@@ -1,6 +1,8 @@
 #include "CPU6502.h"
 
-CPU6502::CPU6502()
+#define PPU_STATUS 0x2002
+
+CPU6502::CPU6502(PPU &ppuRef) : ppu(&ppuRef)
 {
     A = X = Y = 0;
     P = 0;
@@ -11,9 +13,7 @@ CPU6502::CPU6502()
 
 void CPU6502::updateZNFlags(uint8_t value)
 {
-
     setFlag(0x02, value == 0);
-
     setFlag(0x80, value & 0x80);
 }
 
@@ -42,6 +42,17 @@ void CPU6502::writeMemory(uint16_t address, uint8_t value)
 
 uint8_t CPU6502::readMemory(uint16_t address)
 {
+    if (address == PPU_STATUS)
+    {
+        uint8_t value = this->ppu->status;
+
+        this->ppu->setVerticalBlank(false);
+
+        value &= 0xE0;
+
+        return value;
+    }
+
     return RAM[address];
 }
 

@@ -1,7 +1,8 @@
-#include "ROM/PPU.h"
+#include <cstdint>
 #include <cstdio>
 
-uint32_t PPU::getNESColor(uint8_t index)
+
+uint32_t getNESColor(uint8_t index)
 {
     static const uint32_t NESPalette[64] = {
         0x7C7C7C, 0x0000FC, 0x0000BC, 0x4428BC, 0x940084, 0xA80020, 0xA81000,

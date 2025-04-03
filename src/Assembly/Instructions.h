@@ -2,6 +2,7 @@
 #define INSTRUCTIONS_H
 
 #include "CPU/CPU6502.h"
+#include <unordered_map>
 
 class Instructions
 {
@@ -19,6 +20,7 @@ class Instructions
     void handleKIL(CPU6502 &cpu);
     void handleLSRAbsolute(CPU6502 &cpu);
     void handleSEI(CPU6502 &cpu);
+    void handleDEX(CPU6502 &cpu);
     void handleCLD(CPU6502 &cpu);
     void handleSTA(CPU6502 &cpu);
     void handleLDXImmediate(CPU6502 &cpu);
@@ -27,6 +29,12 @@ class Instructions
     void handleLDA(CPU6502 &cpu);
     void handleBPL(CPU6502 &cpu);
     void handleISCAbsoluteX(CPU6502 &cpu);
+    void handleImmLDY(CPU6502 &cpu);
+    void handleAbsXLDA(CPU6502 &cpu);
+    void handleImmCMP(CPU6502 &cpu);
+    void handleRelBCS(CPU6502 &cpu);
+
+    static std::unordered_map<uint8_t, std::string> opcodeMap;
 
   private:
     uint8_t fetchImmediate(CPU6502 &cpu);
@@ -40,6 +48,7 @@ class Instructions
     uint16_t fetchIndirect(CPU6502 &cpu);
     uint8_t fetchIndexedIndirectX(CPU6502 &cpu);
     uint8_t fetchIndirectIndexedY(CPU6502 &cpu);
+    int16_t fetchRelative(CPU6502 &cpu);
 };
 
 #endif
