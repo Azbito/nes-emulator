@@ -5,6 +5,7 @@ JITCompiler::~JITCompiler() = default;
 
 JITCompiler::JITCompiler(size_t bufferSize)
 {
+    opcodeTable[0xD0] = &Instructions::handleBNE;
     opcodeTable[0xC9] = &Instructions::handleImmCMP;
     opcodeTable[0xB0] = &Instructions::handleRelBCS;
     opcodeTable[0xCA] = &Instructions::handleDEX;

@@ -94,6 +94,19 @@ void Instructions::handleDEX(CPU6502 &cpu)
     cpu.PC++;
 }
 
+void Instructions::handleBNE(CPU6502 &cpu)
+{
+    int16_t targetAddr = fetchRelative(cpu);
+
+    if (!cpu.isFlagSet(cpu.Z))
+    {
+        cpu.PC = targetAddr;
+        return;
+    }
+
+    cpu.PC += 2;
+}
+
 void Instructions::handleImmCMP(CPU6502 &cpu)
 {
     uint8_t value = cpu.readMemory(cpu.PC + 1);

@@ -33,7 +33,7 @@ class Instructions
     void handleAbsXLDA(CPU6502 &cpu);
     void handleImmCMP(CPU6502 &cpu);
     void handleRelBCS(CPU6502 &cpu);
-
+    void handleBNE(CPU6502 &cpu);
     static std::unordered_map<uint8_t, std::string> opcodeMap;
 
   private:
