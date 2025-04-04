@@ -11,23 +11,31 @@ CPU6502::CPU6502(PPU &ppuRef) : ppu(&ppuRef)
     std::memset(RAM, 0, sizeof(RAM));
 }
 
+bool CPU6502::getFlag(uint8_t flag)
+{
+    return (P & flag) != 0;
+}
+
 void CPU6502::updateZNFlags(uint8_t value)
 {
-    setFlag(0x02, value == 0);
-    setFlag(0x80, value & 0x80);
+    setFlag(FLAG_ZERO, value == 0);
+    setFlag(FLAG_NEGATIVE, value & 0x80);
+}
+
+uint8_t CPU6502::popStack()
+{
+    return readMemory(0x0100 + ++SP);
 }
 
 void CPU6502::pushToStack(uint8_t value)
 {
-
     writeMemory(0x0100 + SP--, value);
 }
 
 void CPU6502::pushToStack16(uint16_t value)
 {
-
-    pushToStack(value & 0xFF);
     pushToStack((value >> 8) & 0xFF);
+    pushToStack(value & 0xFF);
 }
 
 bool CPU6502::isNegativeFlagClean()
@@ -54,11 +62,6 @@ uint8_t CPU6502::readMemory(uint16_t address)
     }
 
     return RAM[address];
-}
-
-uint8_t CPU6502::status() const
-{
-    return P;
 }
 
 void CPU6502::setStatus(uint8_t status)

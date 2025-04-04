@@ -16,7 +16,7 @@ inline std::string uint8ToString(uint8_t value)
 inline std::string hexToString(uint8_t opcode)
 {
     char buffer[5];
-    snprintf(buffer, sizeof(buffer), "[%02X]", opcode);
+    snprintf(buffer, sizeof(buffer), "[ 0x%02X ]", opcode);
     return buffer;
 }
 

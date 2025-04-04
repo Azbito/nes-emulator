@@ -1,10 +1,29 @@
 
 #include "JIT/Compiler.h"
+#include <bitset>
+#include <iomanip>
 
 JITCompiler::~JITCompiler() = default;
 
 JITCompiler::JITCompiler(size_t bufferSize)
 {
+    opcodeTable[0x24] = &Instructions::handleZeroPageBIT;
+    opcodeTable[0x09] = &Instructions::handleORA;
+    opcodeTable[0x99] = &Instructions::handleAbsoluteYSTA;
+    opcodeTable[0x4C] = &Instructions::handleAbsoluteJMP;
+    opcodeTable[0xEE] = &Instructions::handleAbsoluteINC;
+
+    opcodeTable[0xC8] = &Instructions::handleINY;
+    opcodeTable[0x2C] = &Instructions::handleAbsBIT;
+    opcodeTable[0x60] = &Instructions::handleRTS;
+    opcodeTable[0xC0] = &Instructions::handleImmCPY;
+    opcodeTable[0x90] = &Instructions::handleRelBCC;
+    opcodeTable[0x91] = &Instructions::handleIndirectYSTA;
+    opcodeTable[0x88] = &Instructions::handleDEY;
+    opcodeTable[0xE0] = &Instructions::handleImmCPX;
+    opcodeTable[0x86] = &Instructions::handleZeroPageSTX;
+    opcodeTable[0x85] = &Instructions::handleZeroPageSTA;
+    opcodeTable[0x20] = &Instructions::handleJSR;
     opcodeTable[0xD0] = &Instructions::handleBNE;
     opcodeTable[0xC9] = &Instructions::handleImmCMP;
     opcodeTable[0xB0] = &Instructions::handleRelBCS;
@@ -37,8 +56,15 @@ JITCompiler::JITCompiler(size_t bufferSize)
 
 void JITCompiler::compileOpcode(uint8_t opcode, CPU6502 &cpu)
 {
+    printf("[0x%02X]\n", opcode);
+
     if (opcodeTable[opcode])
     {
+        if (opcode == 0x00)
+        {
+            system("pause");
+        }
+
         (asm_instructions.*opcodeTable[opcode])(cpu);
     }
     else

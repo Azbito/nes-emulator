@@ -42,8 +42,8 @@ bool CPUView::OnUserUpdate(float fElapsedTime)
                                   ? instructions.opcodeMap[opcode]
                                   : "???";
 
-    DrawStringDecal(olc::vf2d(baseX, startY + 8.0f * lineSpacing),
-                    "0x" + utils::hexToString(this->cpu.PC) + ": " +
+    DrawStringDecal(olc::vf2d(baseX, startY + 7.0f * lineSpacing),
+                    utils::hexToString(this->cpu.PC) + ": " +
                         utils::hexToString(opcode) + " " + instruction,
                     olc::WHITE, scale);
 

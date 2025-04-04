@@ -2,3 +2,4 @@
 *.nes
 *.dll
 *.o
+.vscode

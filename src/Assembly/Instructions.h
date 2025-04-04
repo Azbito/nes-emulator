@@ -34,6 +34,23 @@ class Instructions
     void handleImmCMP(CPU6502 &cpu);
     void handleRelBCS(CPU6502 &cpu);
     void handleBNE(CPU6502 &cpu);
+    void handleJSR(CPU6502 &cpu);
+    void handleZeroPageSTA(CPU6502 &cpu);
+    void handleZeroPageSTX(CPU6502 &cpu);
+    void handleImmCPX(CPU6502 &cpu);
+    void handleRelBCC(CPU6502 &cpu);
+    void handleDEY(CPU6502 &cpu);
+    void handleImmCPY(CPU6502 &cpu);
+    void handleRTS(CPU6502 &cpu);
+    void handleIndirectYSTA(CPU6502 &cpu);
+    void handleZeroPageBIT(CPU6502 &cpu);
+    void handleAbsBIT(CPU6502 &cpu);
+    void handleAbsoluteYSTA(CPU6502 &cpu);
+    void handleINY(CPU6502 &cpu);
+    void handleORA(CPU6502 &cpu);
+    void handleAbsoluteJMP(CPU6502 &cpu);
+    void handleAbsoluteINC(CPU6502 &cpu);
+
     static std::unordered_map<uint8_t, std::string> opcodeMap;
 
   private:
@@ -49,6 +66,7 @@ class Instructions
     uint8_t fetchIndexedIndirectX(CPU6502 &cpu);
     uint8_t fetchIndirectIndexedY(CPU6502 &cpu);
     int16_t fetchRelative(CPU6502 &cpu);
+    uint16_t fetchWord(CPU6502 &cpu);
 };
 
 #endif
