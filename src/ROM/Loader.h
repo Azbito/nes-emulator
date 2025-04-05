@@ -10,7 +10,6 @@ class ROMLoader
 {
   public:
     ROMLoader() = default;
-
     bool load(const std::string &filename, ROM &rom);
     bool verify(const std::vector<uint8_t> &data) const;
 };

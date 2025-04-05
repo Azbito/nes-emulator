@@ -2,13 +2,9 @@
 #define PRG_HPP
 
 #include "CPU/CPU6502.h"
-#include "JIT/Compiler.h"
-#include "ROM/Loader.h"
 #include <iostream>
 #include <vector>
 
-#define JIT_BUFFER_SZ 4096
-#define INIT_ADDRESS 0x8000
 #define KB_16 16384
 
 class PRG
@@ -19,29 +15,31 @@ class PRG
     {
     }
 
-    bool load(uint8_t prgBanks)
+    bool load()
     {
-        size_t prgStart = 16;
-        size_t prgSize = prgBanks * KB_16;
+        size_t size = romData.size();
 
-        if (prgSize < 16 + 16384)
+        if (size == KB_16)
         {
-            printf(
-                "\033[1;31m[SYSTEM] ROM is too small. ROM Size: %llu \033[0m\n",
-                romData.size());
-
-            return false;
-        }
-
-        for (size_t i = 0; i < prgSize; ++i)
-        {
-            uint16_t address = 0x8000 + i;
-            cpu.RAM[address] = romData[prgStart + i];
-
-            if (prgBanks == 1 && address >= 0xC000)
+            for (size_t i = 0; i < KB_16; ++i)
             {
-                cpu.RAM[address] = romData[prgStart + (i % 16384)];
+                cpu.RAM[0x8000 + i] = romData[i];
+                cpu.RAM[0xC000 + i] = romData[i];
             }
+        }
+        else if (size == 2 * KB_16)
+        {
+            for (size_t i = 0; i < KB_16; ++i)
+            {
+                cpu.RAM[0x8000 + i] = romData[i];
+                cpu.RAM[0xC000 + i] = romData[KB_16 + i];
+            }
+        }
+        else
+        {
+            printf("\033[1;31m[SYSTEM] Unsupported PRG-ROM size: %llu\033[0m\n",
+                   size);
+            return false;
         }
 
         return true;
