@@ -9,6 +9,18 @@ CPU6502::CPU6502(PPU &ppuRef) : ppu(&ppuRef)
     std::memset(RAM, 0, sizeof(RAM));
 }
 
+void CPU6502::reset()
+{
+    uint16_t low = RAM[0xFFFC];
+    uint16_t high = RAM[0xFFFD];
+
+    PC = (high << 8) | low;
+
+    A = X = Y = 0;
+    SP = 0xFD;
+    P = 0x24;
+}
+
 bool CPU6502::getFlag(uint8_t flag)
 {
     return (P & flag) != 0;

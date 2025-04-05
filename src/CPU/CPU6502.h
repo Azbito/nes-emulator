@@ -43,6 +43,7 @@ class CPU6502
     void setFlag(uint8_t flag, bool value);
     bool getFlag(uint8_t flag);
     bool isFlagSet(uint8_t flag) const;
+    void reset();
 
   private:
     PPU *ppu;
