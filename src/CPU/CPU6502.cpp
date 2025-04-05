@@ -2,28 +2,32 @@
 
 CPU6502::CPU6502(PPU &ppuRef) : ppu(&ppuRef)
 {
-    A = X = Y = 0;
-    P = 0;
-    SP = 0xFF;
-    PC = 0x0000;
-    std::memset(RAM, 0, sizeof(RAM));
+    setA(0);
+    setX(0);
+    setY(0);
+    setP(0);
+    setSP(0xFF);
+    setPC(0x0000);
+    std::memset(m_RAM, 0, sizeof(m_RAM));
 }
 
 void CPU6502::reset()
 {
-    uint16_t low = RAM[0xFFFC];
-    uint16_t high = RAM[0xFFFD];
+    uint16_t low = readMemory(0xFFFC);
+    uint16_t high = readMemory(0xFFFD);
 
-    PC = (high << 8) | low;
+    setPC((high << 8) | low);
 
-    A = X = Y = 0;
-    SP = 0xFD;
-    P = 0x24;
+    setA(0);
+    setX(0);
+    setY(0);
+    setSP(0xFD);
+    setP(0x24);
 }
 
 bool CPU6502::getFlag(uint8_t flag)
 {
-    return (P & flag) != 0;
+    return (m_P & flag) != 0;
 }
 
 void CPU6502::updateZNFlags(uint8_t value)
@@ -34,12 +38,12 @@ void CPU6502::updateZNFlags(uint8_t value)
 
 uint8_t CPU6502::popStack()
 {
-    return readMemory(0x0100 + ++SP);
+    return readMemory(0x0100 + ++m_SP);
 }
 
 void CPU6502::pushToStack(uint8_t value)
 {
-    writeMemory(0x0100 + SP--, value);
+    writeMemory(0x0100 + m_SP--, value);
 }
 
 void CPU6502::pushToStack16(uint16_t value)
@@ -50,7 +54,7 @@ void CPU6502::pushToStack16(uint16_t value)
 
 bool CPU6502::isNegativeFlagClean()
 {
-    return !(P & 0x80);
+    return !(m_P & 0x80);
 }
 
 void CPU6502::writeMemory(uint16_t address, uint8_t value)
@@ -62,12 +66,12 @@ void CPU6502::writeMemory(uint16_t address, uint8_t value)
         return;
     }
 
-    RAM[address] = value;
+    m_RAM[address] = value;
 }
 
 void CPU6502::clock()
 {
-    cycles--;
+    m_cycles--;
 }
 
 uint8_t CPU6502::readMemory(uint16_t address)
@@ -90,23 +94,23 @@ uint8_t CPU6502::readMemory(uint16_t address)
         return ppu->getRegister(reg);
     }
 
-    return RAM[address];
+    return m_RAM[address];
 }
 
 void CPU6502::setStatus(uint8_t status)
 {
-    P = status;
+    setP(status);
 }
 
 void CPU6502::setFlag(uint8_t flag, bool value)
 {
     if (value)
-        P |= flag;
+        m_P |= flag;
     else
-        P &= ~flag;
+        m_P &= ~flag;
 }
 
 bool CPU6502::isFlagSet(uint8_t flag) const
 {
-    return P & flag;
+    return m_P & flag;
 }

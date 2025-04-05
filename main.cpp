@@ -19,9 +19,10 @@ void runCPU(CPU6502 &cpu, JITCompiler &jit, PPU &ppu)
 
     while (true)
     {
-        if (cpu.cycles == 0)
+        if (cpu.getCycles() == 0)
         {
-            uint8_t opcode = cpu.readMemory(cpu.PC);
+            uint8_t opcode = cpu.readMemory(cpu.getPC());
+            printf(" %02X", opcode);
             jit.compileOpcode(opcode, cpu);
         }
 
@@ -53,9 +54,9 @@ int main(int argc, char *argv[])
 
     JITCompiler jit(JIT_BUFFER_SZ);
 
-    PRG prg(romData, cpu); // usando romData diretamente, sem puxar duas vezes
+    PRG prg(romData, cpu);
 
-    if (!prg.load()) // sem argumento aqui, método foi ajustado
+    if (!prg.load())
     {
         std::cerr << "[SYSTEM] Failed to load PRG into CPU memory."
                   << std::endl;
@@ -65,21 +66,6 @@ int main(int argc, char *argv[])
     cpu.reset();
 
     std::thread cpuThread(runCPU, std::ref(cpu), std::ref(jit), std::ref(ppu));
-
-    for (uint16_t addr = 0x7FF0; addr < 0x800F; ++addr)
-    {
-        printf("0x%04X: 0x%02X\n", addr, cpu.readMemory(addr));
-    }
-
-    for (uint16_t addr = 0xFFFC; addr <= 0xFFFD; ++addr)
-    {
-        printf("Reset vector [%04X] = 0x%02X\n", addr, cpu.readMemory(addr));
-    }
-
-    for (uint16_t addr = 0x8000; addr < 0x8008; ++addr)
-    {
-        printf("PRG[%04X] = 0x%02X\n", addr, cpu.readMemory(addr));
-    }
 
     if (cpuView.Construct(ppu.getWidth(), ppu.getHeight(), 4, 4))
     {

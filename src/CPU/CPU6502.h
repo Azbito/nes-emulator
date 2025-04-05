@@ -8,12 +8,14 @@
 
 class CPU6502
 {
-  public:
-    uint8_t A, X, Y, P, SP;
-    uint16_t PC;
-    uint32_t cycles;
-    uint8_t RAM[65536];
+  private:
+    uint8_t m_A, m_X, m_Y, m_P, m_SP;
+    uint16_t m_PC;
+    uint32_t m_cycles;
+    uint8_t m_RAM[65536];
+    PPU *ppu;
 
+  public:
     enum Flags
     {
         FLAG_CARRY = 1 << 0,
@@ -27,6 +29,68 @@ class CPU6502
     };
 
     CPU6502(PPU &ppuRef);
+
+    uint8_t getA() const
+    {
+        return m_A;
+    }
+    uint8_t getX() const
+    {
+        return m_X;
+    }
+    uint8_t getY() const
+    {
+        return m_Y;
+    }
+    uint8_t getP() const
+    {
+        return m_P;
+    }
+    uint8_t getSP() const
+    {
+        return m_SP;
+    }
+    uint16_t getPC() const
+    {
+        return m_PC;
+    }
+    uint32_t getCycles() const
+    {
+        return m_cycles;
+    }
+    uint8_t *getRAM()
+    {
+        return m_RAM;
+    }
+
+    void setA(uint8_t value)
+    {
+        m_A = value;
+    }
+    void setX(uint8_t value)
+    {
+        m_X = value;
+    }
+    void setY(uint8_t value)
+    {
+        m_Y = value;
+    }
+    void setP(uint8_t value)
+    {
+        m_P = value;
+    }
+    void setSP(uint8_t value)
+    {
+        m_SP = value;
+    }
+    void setPC(uint16_t value)
+    {
+        m_PC = value;
+    }
+    void setCycles(uint32_t value)
+    {
+        m_cycles = value;
+    }
 
     void updateZNFlags(uint8_t value);
     void pushToStack(uint8_t value);
@@ -44,8 +108,5 @@ class CPU6502
     bool getFlag(uint8_t flag);
     bool isFlagSet(uint8_t flag) const;
     void reset();
-
-  private:
-    PPU *ppu;
 };
 #endif

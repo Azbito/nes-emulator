@@ -23,16 +23,16 @@ class PRG
         {
             for (size_t i = 0; i < KB_16; ++i)
             {
-                cpu.RAM[0x8000 + i] = romData[i];
-                cpu.RAM[0xC000 + i] = romData[i];
+                cpu.writeMemory(0x8000 + i, romData[i]);
+                cpu.writeMemory(0xC000 + i, romData[i]);
             }
         }
         else if (size == 2 * KB_16)
         {
             for (size_t i = 0; i < KB_16; ++i)
             {
-                cpu.RAM[0x8000 + i] = romData[i];
-                cpu.RAM[0xC000 + i] = romData[KB_16 + i];
+                cpu.writeMemory(0x8000 + i, romData[i]);
+                cpu.writeMemory(0xC000 + i, romData[KB_16 + i]);
             }
         }
         else

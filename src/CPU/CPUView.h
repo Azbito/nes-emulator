@@ -16,7 +16,7 @@ class CPUView : public olc::PixelGameEngine
     bool OnUserUpdate(float fElapsedTime) override;
 
   private:
-    bool debugger();
+    void debugger();
 
     CPU6502 &cpu;
     PPU &ppu;
