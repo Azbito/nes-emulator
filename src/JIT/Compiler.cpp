@@ -60,7 +60,6 @@ void JITCompiler::compileOpcode(uint8_t opcode, CPU6502 &cpu)
     if (opcodeTable[opcode])
     {
         (asm_instructions.*opcodeTable[opcode])(cpu);
-        printf("Opcode read: 0x%02X\n", opcode);
     }
     else
     {

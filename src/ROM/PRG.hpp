@@ -36,11 +36,11 @@ class PRG
         for (size_t i = 0; i < prgSize; ++i)
         {
             uint16_t address = 0x8000 + i;
-            cpu.RAM[address] = romData[prgStart + i];
+            cpu.setRAM(address, romData[prgStart + i]);
 
             if (prgBanks == 1 && address >= 0xC000)
             {
-                cpu.RAM[address] = romData[prgStart + (i % 16384)];
+                cpu.setRAM(address, romData[prgStart + (i % 16384)]);
             }
         }
 

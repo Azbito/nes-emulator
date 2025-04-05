@@ -9,11 +9,6 @@
 class CPU6502
 {
   public:
-    uint8_t A, X, Y, P, SP;
-    uint16_t PC;
-    uint32_t cycles;
-    uint8_t RAM[65536];
-
     enum Flags
     {
         FLAG_CARRY = 1 << 0,
@@ -44,7 +39,41 @@ class CPU6502
     bool getFlag(uint8_t flag);
     bool isFlagSet(uint8_t flag) const;
 
+    uint8_t getA() const;
+    void setA(uint8_t value);
+
+    uint8_t getX() const;
+    void setX(uint8_t value);
+
+    uint8_t getY() const;
+    void setY(uint8_t value);
+
+    uint8_t getP() const;
+    void setP(uint8_t value);
+
+    uint8_t getSP() const;
+    void setSP(uint8_t value);
+
+    uint16_t getPC() const;
+    void setPC(uint16_t value);
+
+    uint32_t getCycles() const;
+    void setCycles(uint32_t value);
+
+    uint8_t getRAM(uint16_t address) const;
+    void setRAM(uint16_t address, uint8_t value);
+
   private:
+    uint8_t m_A;
+    uint8_t m_X;
+    uint8_t m_Y;
+    uint8_t m_P;
+    uint8_t m_SP;
+    uint16_t m_PC;
+    uint32_t m_cycles;
+    uint8_t m_RAM[65536];
+
     PPU *ppu;
 };
+
 #endif

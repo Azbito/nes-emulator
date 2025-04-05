@@ -44,8 +44,6 @@ bool ROMLoader::load(const std::string &filename, ROM &rom)
         return false;
     }
 
-    std::cout << prgSize << std::endl << chrSize << std::endl;
-
     std::vector<uint8_t> prgData(fileData.begin() + 16,
                                  fileData.begin() + 16 + prgSize);
 
