@@ -59,6 +59,8 @@ class ROM
     }
 
   private:
+    uint8_t m_prgBanks;
+
     std::vector<uint8_t> m_PRGData;
     std::vector<uint8_t> m_CHRData;
     uint8_t m_prgBanks = 0;

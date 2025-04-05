@@ -1,4 +1,5 @@
 #include "CPU/CPU6502.h"
+#include "CPU/CPU6502.h"
 #include "CPU/CPUView.h"
 #include "JIT/Compiler.h"
 #include "PPU/PPU.h"
@@ -9,9 +10,6 @@
 #include <thread>
 
 #define JIT_BUFFER_SZ 4096
-#define INIT_ADDRESS 0x8000
-#define KB_16 16384
-#define CHR_8KB 8192
 
 void runCPU(CPU6502 &cpu, JITCompiler &jit, PPU &ppu)
 {
@@ -19,7 +17,7 @@ void runCPU(CPU6502 &cpu, JITCompiler &jit, PPU &ppu)
 
     while (true)
     {
-        if (cpu.cycles == 0)
+        if (cpu.getCycles() == 0)
         {
             uint8_t opcode = cpu.readMemory(cpu.PC);
             jit.compileOpcode(opcode, cpu);
@@ -34,20 +32,33 @@ void runCPU(CPU6502 &cpu, JITCompiler &jit, PPU &ppu)
 
 int main(int argc, char *argv[])
 {
-    ROMLoader romLoader;
+    if (argc < 2)
+    {
+        std::cerr << "Usage: " << argv[0] << " <rom_file.nes>" << std::endl;
+        return 1;
+    }
+
     ROM rom;
+    ROMLoader romLoader;
+
+    std::cout << "[SYSTEM] Running emulator..." << std::endl;
 
     if (!romLoader.load(argv[1], rom))
     {
         return 1;
     }
 
-    const std::vector<uint8_t> &romData = rom.getPRGData();
+    std::cout << "[SYSTEM] Valid ROM." << std::endl;
+    std::cout << "[SYSTEM] ROM loaded successfully!" << std::endl;
+
+    const auto &prgData = rom.getPRGData();
+    size_t sz = prgData.size();
 
     PPU ppu(nullptr);
     CPU6502 cpu(ppu);
     CPUView cpuView(cpu, ppu);
 
+    ppu.powerUp();
     ppu.setPGE(&cpuView);
     ppu.setCHRROM(rom.getCHRData());
 
@@ -87,6 +98,5 @@ int main(int argc, char *argv[])
     }
 
     cpuThread.join();
-
     return 0;
 }

@@ -1,6 +1,5 @@
-
-#ifndef PPU_HPP
-#define PPU_HPP
+#ifndef PPU_H
+#define PPU_H
 
 #include "Libraries/olcPixelGameEngine.h"
 #include <cstdint>
@@ -44,15 +43,25 @@ class PPU
     PPUCTRL ppuctrl;
     Registers registers;
 
-    void setCHRROM(const std::vector<uint8_t> &chrData);
-    void setVerticalBlank(bool value);
+    inline void setCHRROM(const std::vector<uint8_t> &chrData)
+    {
+        m_chrROM = chrData;
+    }
+    inline void setVerticalBlank(bool value)
+    {
+        m_verticalBlank = value;
+    }
 
     void writeRegister(uint16_t address, uint8_t value);
     void setPGE(olc::PixelGameEngine *pgeRef);
-    void setAddressLatch(uint8_t value);
+    inline void setAddressLatch(uint8_t value)
+    {
+        m_addressLatch = value;
+    }
 
     void renderFrame();
     void drawTile(int x, int y, uint8_t tileIndex);
+    void powerUp();
 
     uint8_t getRegister(uint16_t address);
     uint8_t getPixelFromTile(uint8_t tileIndex, uint8_t row, uint8_t col);
@@ -60,27 +69,38 @@ class PPU
 
     void clock();
 
-    int getWidth() const;
-    int getHeight() const;
-    bool getVBlank() const;
-    uint8_t getStatus() const;
-    uint8_t getAddressLatch() const;
+    inline int getWidth() const
+    {
+        return 256;
+    }
+    inline int getHeight() const
+    {
+        return 240;
+    }
+    inline bool getVBlank() const
+    {
+        return m_verticalBlank;
+    }
+    inline uint8_t getStatus() const
+    {
+        return m_status;
+    }
+    inline uint8_t getAddressLatch() const
+    {
+        return m_addressLatch;
+    }
 
-  public:
-    int width = 256;
-    int height = 240;
-
-    std::vector<uint8_t> chrROM;
-
-    uint8_t status = 0x80;
-    bool verticalBlank = false;
-    uint8_t memory[0x3FFF];
-    uint16_t vramAddress = 0;
-    uint8_t addressLatch = 0;
-    uint8_t ppuDataBuffer = 0;
-
-    int cycle = 0;
-    int scanline = 0;
+  private:
+    std::vector<uint8_t> m_chrROM;
+    std::vector<uint8_t> m_vram;
+    std::vector<uint8_t> m_oam;
+    uint8_t m_status = 0;
+    uint8_t m_addressLatch = 0;
+    bool m_verticalBlank = false;
+    uint16_t m_address = 0;
+    uint16_t m_tempAddress = 0;
+    uint16_t m_cycle = 0;
+    uint16_t m_scanline = 0;
 };
 
 #endif

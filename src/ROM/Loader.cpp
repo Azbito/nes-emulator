@@ -23,6 +23,7 @@ bool ROMLoader::load(const std::string &filename, ROM &rom)
         printf("\033[1;31m[SYSTEM] Invalid ROM.\033[0m\n");
         return false;
     }
+
     printf("\033[1;32m[SYSTEM] Valid ROM.\033[0m\n");
 
     const size_t headerSize = 16;

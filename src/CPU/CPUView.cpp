@@ -25,28 +25,28 @@ bool CPUView::OnUserUpdate(float fElapsedTime)
     return true;
 }
 
-bool CPUView::debugger()
+void CPUView::debugger()
 {
     olc::vf2d scale = {0.5f, 0.5f};
     float baseX = 140.0f;
     float startY = 10.0f;
     float lineSpacing = 15.0f;
 
-    uint8_t opcode = this->cpu.RAM[this->cpu.PC];
+    uint8_t opcode = cpu.getRAM(cpu.getPC());
 
     DrawStringDecal({baseX, startY}, "CPU 6502 Registers", olc::WHITE, scale);
     DrawStringDecal({baseX, startY + lineSpacing},
-                    "A:  " + std::to_string(this->cpu.A), olc::GREEN, scale);
+                    "A:  " + std::to_string(cpu.getA()), olc::GREEN, scale);
     DrawStringDecal({baseX, startY + 2.0f * lineSpacing},
-                    "X:  " + std::to_string(this->cpu.X), olc::GREEN, scale);
+                    "X:  " + std::to_string(cpu.getX()), olc::GREEN, scale);
     DrawStringDecal({baseX, startY + 3.0f * lineSpacing},
-                    "Y:  " + std::to_string(this->cpu.Y), olc::GREEN, scale);
+                    "Y:  " + std::to_string(cpu.getY()), olc::GREEN, scale);
     DrawStringDecal({baseX, startY + 4.0f * lineSpacing},
-                    "PC: " + std::to_string(this->cpu.PC), olc::CYAN, scale);
+                    "PC: " + std::to_string(cpu.getPC()), olc::CYAN, scale);
     DrawStringDecal({baseX, startY + 5.0f * lineSpacing},
-                    "SP: " + std::to_string(this->cpu.SP), olc::MAGENTA, scale);
+                    "SP: " + std::to_string(cpu.getSP()), olc::MAGENTA, scale);
     DrawStringDecal({baseX, startY + 6.0f * lineSpacing},
-                    "P:  " + std::to_string(this->cpu.P), olc::YELLOW, scale);
+                    "P:  " + std::to_string(cpu.getP()), olc::YELLOW, scale);
 
     Instructions instructions;
 
@@ -55,7 +55,7 @@ bool CPUView::debugger()
                                   : "???";
 
     DrawStringDecal(olc::vf2d(baseX, startY + 7.0f * lineSpacing),
-                    utils::hexToString(this->cpu.PC) + ": " +
+                    utils::hexToString(cpu.getPC()) + ": " +
                         utils::hexToString(opcode) + " " + instruction,
                     olc::WHITE, scale);
-}
+};
