@@ -25,7 +25,7 @@ bool CPUView::OnUserUpdate(float fElapsedTime)
     return true;
 }
 
-bool CPUView::debugger()
+void CPUView::debugger()
 {
     olc::vf2d scale = {0.5f, 0.5f};
     float baseX = 140.0f;
@@ -58,4 +58,4 @@ bool CPUView::debugger()
                     utils::hexToString(this->cpu.PC) + ": " +
                         utils::hexToString(opcode) + " " + instruction,
                     olc::WHITE, scale);
-}
+};

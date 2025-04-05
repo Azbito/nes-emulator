@@ -60,6 +60,8 @@ void CPU6502::clock()
 
 uint8_t CPU6502::readMemory(uint16_t address)
 {
+    printf("Reading address: 0x%02X\n", address);
+
     if (address == ppu->registers.PPUSTATUS)
     {
         uint8_t value = ppu->getStatus();

@@ -5,7 +5,6 @@
 #include <cstring>
 #include <vector>
 
-
 class ROM
 {
   public:
@@ -61,7 +60,19 @@ class ROM
         return nametableData;
     }
 
+    uint8_t getPRGBanks() const
+    {
+        return m_prgBanks;
+    }
+
+    void setPRGBanks(uint8_t banks)
+    {
+        m_prgBanks = banks;
+    }
+
   private:
+    uint8_t m_prgBanks;
+
     std::vector<uint8_t> m_PRGData;
     std::vector<uint8_t> m_CHRData;
     char m_romName[512];

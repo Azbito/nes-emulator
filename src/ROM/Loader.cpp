@@ -27,13 +27,30 @@ bool ROMLoader::load(const std::string &filename, ROM &rom)
         printf("\033[1;31m[SYSTEM] Invalid ROM.\033[0m\n");
         return false;
     }
+
     printf("\033[1;32m[SYSTEM] Valid ROM.\033[0m\n");
 
-    size_t prgSize = 16384 * fileData[4];
-    size_t chrSize = (fileSize > prgSize) ? (fileSize - prgSize) : 0;
+    size_t prgBanks = fileData[4];
+    size_t chrBanks = fileData[5];
 
-    std::vector<uint8_t> prgData(fileData.begin(), fileData.begin() + prgSize);
-    std::vector<uint8_t> chrData(fileData.begin() + prgSize, fileData.end());
+    size_t prgSize = 16384 * prgBanks;
+    size_t chrSize = 8192 * chrBanks;
+
+    rom.setPRGBanks(prgBanks);
+
+    if (fileData.size() < 16 + prgSize + chrSize)
+    {
+        std::cerr << "ROM size is smaller than expected.\n";
+        return false;
+    }
+
+    std::cout << prgSize << std::endl << chrSize << std::endl;
+
+    std::vector<uint8_t> prgData(fileData.begin() + 16,
+                                 fileData.begin() + 16 + prgSize);
+
+    std::vector<uint8_t> chrData(fileData.begin() + 16 + prgSize,
+                                 fileData.begin() + 16 + prgSize + chrSize);
 
     rom.setPRGData(prgData);
     rom.setCHRData(chrData);

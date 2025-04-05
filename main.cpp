@@ -35,8 +35,8 @@ void runCPU(CPU6502 &cpu, JITCompiler &jit, PPU &ppu)
 
 int main(int argc, char *argv[])
 {
-    ROMLoader romLoader;
     ROM rom;
+    ROMLoader romLoader;
 
     if (!romLoader.load(argv[1], rom))
     {
@@ -54,15 +54,19 @@ int main(int argc, char *argv[])
 
     JITCompiler jit(JIT_BUFFER_SZ);
 
-    uint8_t prgBanks = romData[4];
-    PRG prg(romData, cpu);
+    uint8_t prgBanks = rom.getPRGBanks();
+    PRG prg(rom.getPRGData(), cpu);
 
     if (!prg.load(prgBanks))
     {
         return 1;
     }
 
-    cpu.PC = INIT_ADDRESS;
+    uint8_t lo = cpu.readMemory(0xFFFC);
+    uint8_t hi = cpu.readMemory(0xFFFD);
+    cpu.PC = (hi << 8) | lo;
+
+    printf("Reset vector: %04X\n", cpu.PC);
 
     std::thread cpuThread(runCPU, std::ref(cpu), std::ref(jit), std::ref(ppu));
 

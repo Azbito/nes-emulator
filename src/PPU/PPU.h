@@ -66,7 +66,7 @@ class PPU
     uint8_t getStatus() const;
     uint8_t getAddressLatch() const;
 
-  public:
+  private:
     int width = 256;
     int height = 240;
 
