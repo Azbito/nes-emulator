@@ -12,7 +12,8 @@ JITCompiler::JITCompiler(size_t bufferSize)
     opcodeTable[0x99] = &Instructions::handleAbsoluteYSTA;
     opcodeTable[0x4C] = &Instructions::handleAbsoluteJMP;
     opcodeTable[0xEE] = &Instructions::handleAbsoluteINC;
-
+    opcodeTable[0x29] = &Instructions::handleAND;
+    opcodeTable[0x8A] = &Instructions::handleTXA;
     opcodeTable[0xC8] = &Instructions::handleINY;
     opcodeTable[0x2C] = &Instructions::handleAbsBIT;
     opcodeTable[0x60] = &Instructions::handleRTS;
@@ -56,15 +57,8 @@ JITCompiler::JITCompiler(size_t bufferSize)
 
 void JITCompiler::compileOpcode(uint8_t opcode, CPU6502 &cpu)
 {
-    printf("[0x%02X]\n", opcode);
-
     if (opcodeTable[opcode])
     {
-        if (opcode == 0x00)
-        {
-            system("pause");
-        }
-
         (asm_instructions.*opcodeTable[opcode])(cpu);
     }
     else

@@ -1,7 +1,5 @@
 #include "CPU6502.h"
 
-#define PPU_STATUS 0x2002
-
 CPU6502::CPU6502(PPU &ppuRef) : ppu(&ppuRef)
 {
     A = X = Y = 0;
@@ -45,20 +43,39 @@ bool CPU6502::isNegativeFlagClean()
 
 void CPU6502::writeMemory(uint16_t address, uint8_t value)
 {
+    if (address >= ppu->registers.PPUCTRL && address <= 0x3FFF)
+    {
+        uint16_t reg = 0x2000 + (address % 8);
+        ppu->writeRegister(reg, value);
+        return;
+    }
+
     RAM[address] = value;
+}
+
+void CPU6502::clock()
+{
+    cycles--;
 }
 
 uint8_t CPU6502::readMemory(uint16_t address)
 {
-    if (address == PPU_STATUS)
+    if (address == ppu->registers.PPUSTATUS)
     {
-        uint8_t value = this->ppu->status;
+        uint8_t value = ppu->getStatus();
 
-        this->ppu->setVerticalBlank(false);
+        value |= (ppu->getVBlank() ? 0x80 : 0x00);
 
-        value &= 0xE0;
+        ppu->setVerticalBlank(false);
+        ppu->setAddressLatch(0);
 
-        return value;
+        return value & 0xE0;
+    }
+
+    if (address >= ppu->registers.PPUCTRL && address <= 0x3FFF)
+    {
+        uint16_t reg = 0x2000 + (address % 8);
+        return ppu->getRegister(reg);
     }
 
     return RAM[address];

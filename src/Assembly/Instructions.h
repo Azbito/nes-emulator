@@ -22,9 +22,11 @@ class Instructions
     void handleSEI(CPU6502 &cpu);
     void handleDEX(CPU6502 &cpu);
     void handleCLD(CPU6502 &cpu);
+    void handleTXA(CPU6502 &cpu);
     void handleSTA(CPU6502 &cpu);
     void handleLDXImmediate(CPU6502 &cpu);
     void handleTXS(CPU6502 &cpu);
+    void handleAND(CPU6502 &cpu);
     void handleLDAAbsolute(CPU6502 &cpu);
     void handleLDA(CPU6502 &cpu);
     void handleBPL(CPU6502 &cpu);

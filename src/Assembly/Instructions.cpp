@@ -158,13 +158,6 @@ void Instructions::handleRelBCC(CPU6502 &cpu)
 
 void Instructions::handleRTS(CPU6502 &cpu)
 {
-    if (cpu.SP >= 0xFE)
-    {
-        printf("EPA EPA PE \n");
-        cpu.PC = 0x0000;
-        return;
-    }
-
     uint8_t low = cpu.popStack();
     uint8_t high = cpu.popStack();
     cpu.PC = (high << 8) | low;
@@ -214,11 +207,8 @@ void Instructions::handleAbsBIT(CPU6502 &cpu)
 
 void Instructions::handleAbsoluteYSTA(CPU6502 &cpu)
 {
-    uint8_t address = fetchAbsoluteY(cpu);
-    uint8_t value = cpu.readMemory(address);
-
+    uint16_t address = fetchAbsoluteAddress(cpu) + cpu.Y;
     cpu.writeMemory(address, cpu.A);
-
     cpu.cycles += 5;
     cpu.PC += 3;
 }
@@ -236,9 +226,17 @@ void Instructions::handleAbsoluteINC(CPU6502 &cpu)
 void Instructions::handleAbsoluteJMP(CPU6502 &cpu)
 {
     uint16_t address = fetchWord(cpu);
-
     cpu.PC = address;
     cpu.cycles += 3;
+}
+
+void Instructions::handleAND(CPU6502 &cpu)
+{
+    uint8_t value = fetchImmediate(cpu);
+    cpu.A &= value;
+    cpu.updateZNFlags(cpu.A);
+    cpu.cycles += 2;
+    cpu.PC += 2;
 }
 
 void Instructions::handleORA(CPU6502 &cpu)
@@ -248,7 +246,7 @@ void Instructions::handleORA(CPU6502 &cpu)
     cpu.updateZNFlags(cpu.A);
 
     cpu.cycles += 2;
-    cpu.PC += 1;
+    cpu.PC += 2;
 }
 
 void Instructions::handleINY(CPU6502 &cpu)
@@ -434,6 +432,16 @@ void Instructions::handleEORZP(CPU6502 &cpu)
     cpu.PC += 2;
 }
 
+void Instructions::handleTXA(CPU6502 &cpu)
+{
+    cpu.A = cpu.X;
+
+    cpu.updateZNFlags(cpu.A);
+
+    cpu.cycles += 2;
+    cpu.PC += 1;
+}
+
 void Instructions::handleTXS(CPU6502 &cpu)
 {
     cpu.SP = cpu.X;
@@ -483,7 +491,8 @@ void Instructions::handleCLD(CPU6502 &cpu)
 
 void Instructions::handleSEI(CPU6502 &cpu)
 {
-    cpu.P |= 0x04;
+    cpu.setFlag(cpu.FLAG_INTERRUPT, true);
+
     cpu.cycles += 2;
     cpu.PC++;
 }

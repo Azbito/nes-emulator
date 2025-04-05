@@ -1,7 +1,7 @@
 #ifndef CPU6502_H
 #define CPU6502_H
 
-#include "PPU/PPU.hpp"
+#include "PPU/PPU.h"
 #include <cstdint>
 #include <cstring>
 #include <iostream>
@@ -12,7 +12,7 @@ class CPU6502
     uint8_t A, X, Y, P, SP;
     uint16_t PC;
     uint32_t cycles;
-    uint8_t RAM[0x10000];
+    uint8_t RAM[65536];
 
     enum Flags
     {
@@ -34,6 +34,7 @@ class CPU6502
     uint8_t popStack();
 
     bool isNegativeFlagClean();
+    void clock();
 
     void writeMemory(uint16_t address, uint8_t value);
     uint8_t readMemory(uint16_t address);

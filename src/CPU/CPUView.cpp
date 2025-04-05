@@ -15,6 +15,18 @@ bool CPUView::OnUserCreate()
 bool CPUView::OnUserUpdate(float fElapsedTime)
 {
     Clear(olc::BLACK);
+
+    if (ppu.getVBlank())
+    {
+        ppu.renderFrame();
+        ppu.setVerticalBlank(false);
+    }
+
+    return true;
+}
+
+bool CPUView::debugger()
+{
     olc::vf2d scale = {0.5f, 0.5f};
     float baseX = 140.0f;
     float startY = 10.0f;
@@ -46,6 +58,4 @@ bool CPUView::OnUserUpdate(float fElapsedTime)
                     utils::hexToString(this->cpu.PC) + ": " +
                         utils::hexToString(opcode) + " " + instruction,
                     olc::WHITE, scale);
-
-    return true;
 }

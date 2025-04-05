@@ -3,7 +3,7 @@
 #include "CPU/CPU6502.h"
 
 #include "JIT/Compiler.h"
-#include "PPU/PPU.hpp"
+#include "PPU/PPU.h"
 #include "ROM/Loader.h"
 #include "ROM/PRG.hpp"
 #include "ROM/ROM.hpp"
@@ -15,12 +15,21 @@
 #define KB_16 16384
 #define CHR_8KB 8192
 
-void runCPU(CPU6502 &cpu, JITCompiler &jit)
+void runCPU(CPU6502 &cpu, JITCompiler &jit, PPU &ppu)
 {
     while (true)
     {
-        uint8_t opcode = cpu.RAM[cpu.PC];
-        jit.compileOpcode(opcode, cpu);
+        if (cpu.cycles == 0)
+        {
+            uint8_t opcode = cpu.readMemory(cpu.PC);
+            cpu.PC++;
+            jit.compileOpcode(opcode, cpu);
+        }
+
+        cpu.clock();
+        ppu.clock();
+        ppu.clock();
+        ppu.clock();
     }
 }
 
@@ -36,9 +45,12 @@ int main(int argc, char *argv[])
 
     const std::vector<uint8_t> &romData = rom.getPRGData();
 
-    PPU ppu;
+    PPU ppu(nullptr);
     CPU6502 cpu(ppu);
-    CPUView cpuView(cpu);
+    CPUView cpuView(cpu, ppu);
+
+    ppu.setPGE(&cpuView);
+    ppu.setCHRROM(rom.getCHRData());
 
     JITCompiler jit(JIT_BUFFER_SZ);
 
@@ -52,9 +64,9 @@ int main(int argc, char *argv[])
 
     cpu.PC = INIT_ADDRESS;
 
-    std::thread cpuThread(runCPU, std::ref(cpu), std::ref(jit));
+    std::thread cpuThread(runCPU, std::ref(cpu), std::ref(jit), std::ref(ppu));
 
-    if (cpuView.Construct(ppu.width, ppu.height, 4, 4))
+    if (cpuView.Construct(ppu.getWidth(), ppu.getHeight(), 4, 4))
     {
         cpuView.Start();
     }
