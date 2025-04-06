@@ -239,6 +239,218 @@ void Instructions::handleAND(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 2);
 }
 
+void Instructions::handleZeroPageLDA(CPU6502 &cpu)
+{
+    uint8_t address = fetchZeroPage(cpu);
+
+    uint8_t value = cpu.readMemory(address);
+    cpu.setA(value);
+
+    cpu.setFlag(cpu.FLAG_ZERO, value == 0);
+    cpu.setFlag(cpu.FLAG_NEGATIVE, value & 0x80);
+
+    cpu.setCycles(cpu.getCycles() + 3);
+
+    cpu.setPC(cpu.getPC() + 2);
+}
+
+void Instructions::handleTYA(CPU6502 &cpu)
+{
+    cpu.setA(cpu.getY());
+
+    cpu.setFlag(cpu.FLAG_ZERO, cpu.getA() == 0);
+    cpu.setFlag(cpu.FLAG_NEGATIVE, cpu.getA() & 0x80);
+
+    cpu.setCycles(cpu.getCycles() + 2);
+
+    cpu.setPC(cpu.getPC() + 1);
+}
+
+void Instructions::handlePHA(CPU6502 &cpu)
+{
+    cpu.writeMemory(0x0100 + cpu.getSP(), cpu.getA());
+
+    cpu.setSP(cpu.getSP() - 1);
+
+    cpu.setCycles(cpu.getCycles() + 3);
+
+    cpu.setPC(cpu.getPC() + 1);
+}
+
+void Instructions::handleZeroPageDEC(CPU6502 &cpu)
+{
+    uint8_t address = fetchZeroPage(cpu);
+
+    uint8_t value = cpu.readMemory(address);
+
+    value--;
+
+    cpu.writeMemory(address, value);
+
+    cpu.setFlag(cpu.FLAG_ZERO, value == 0);
+    cpu.setFlag(cpu.FLAG_NEGATIVE, value & 0x80);
+
+    cpu.setCycles(cpu.getCycles() + 5);
+
+    cpu.setPC(cpu.getPC() + 2);
+}
+
+void Instructions::handlePLA(CPU6502 &cpu)
+{
+    uint8_t value = cpu.readMemory(0x100 + cpu.getSP());
+
+    cpu.setA(value);
+
+    cpu.setFlag(cpu.FLAG_ZERO, value == 0);
+    cpu.setFlag(cpu.FLAG_NEGATIVE, value & 0x80);
+
+    cpu.setSP(cpu.getSP() + 1);
+    cpu.setCycles(cpu.getCycles() + 4);
+    cpu.setPC(cpu.getPC() + 1);
+}
+
+void Instructions::handleLDAIndirectIndexedY(CPU6502 &cpu)
+{
+
+    uint8_t value = fetchIndirectIndexedY(cpu);
+
+    cpu.setA(value);
+
+    cpu.setFlag(cpu.FLAG_ZERO, value == 0);
+    cpu.setFlag(cpu.FLAG_NEGATIVE, value & 0x80);
+
+    cpu.setCycles(cpu.getCycles() + 5);
+    cpu.setPC(cpu.getPC() + 2);
+}
+
+void Instructions::handleLDXZeroPage(CPU6502 &cpu)
+{
+    uint8_t addr = cpu.readMemory(cpu.getPC() + 1);
+
+    uint8_t value = cpu.readMemory(addr);
+
+    cpu.setX(value);
+
+    cpu.setFlag(cpu.FLAG_ZERO, value == 0);
+    cpu.setFlag(cpu.FLAG_NEGATIVE, value & 0x80);
+
+    cpu.setCycles(cpu.getCycles() + 3);
+
+    cpu.setPC(cpu.getPC() + 2);
+}
+
+void Instructions::handleADCZeroPage(CPU6502 &cpu)
+{
+    uint8_t addr = cpu.readMemory(cpu.getPC() + 1);
+
+    uint8_t operand = cpu.readMemory(addr);
+
+    uint16_t result = cpu.getA() + operand + cpu.isFlagSet(cpu.FLAG_CARRY);
+
+    cpu.setA(result & 0xFF);
+
+    cpu.setFlag(cpu.FLAG_CARRY, result > 0xFF);
+    cpu.setFlag(cpu.FLAG_ZERO, (result & 0xFF) == 0);
+    cpu.setFlag(cpu.FLAG_NEGATIVE, result & 0x80);
+    cpu.setFlag(cpu.FLAG_OVERFLOW,
+                ((cpu.getA() ^ operand) & (cpu.getA() ^ result) & 0x80) != 0);
+    cpu.setCycles(cpu.getCycles() + 3);
+
+    cpu.setPC(cpu.getPC() + 2);
+}
+
+void Instructions::handleCLC(CPU6502 &cpu)
+{
+    cpu.setFlag(cpu.FLAG_CARRY, false);
+
+    cpu.setCycles(cpu.getCycles() + 2);
+
+    cpu.setPC(cpu.getPC() + 1);
+}
+
+void Instructions::handleTAX(CPU6502 &cpu)
+{
+    uint8_t value = cpu.getA();
+    cpu.setX(value);
+
+    cpu.setFlag(cpu.FLAG_ZERO, value == 0);
+    cpu.setFlag(cpu.FLAG_NEGATIVE, value & 0x80);
+
+    cpu.setCycles(cpu.getCycles() + 2);
+
+    cpu.setPC(cpu.getPC() + 1);
+}
+
+void Instructions::handleLSRA(CPU6502 &cpu)
+{
+    uint8_t value = cpu.getA();
+
+    bool carry = value & 0x01;
+
+    value >>= 1;
+
+    cpu.setA(value);
+
+    cpu.setFlag(cpu.FLAG_CARRY, carry);
+    cpu.setFlag(cpu.FLAG_ZERO, value == 0);
+    cpu.setFlag(cpu.FLAG_NEGATIVE, false);
+
+    cpu.setCycles(cpu.getCycles() + 2);
+
+    cpu.setPC(cpu.getPC() + 1);
+}
+
+void Instructions::handleZeroPageAND(CPU6502 &cpu)
+{
+    uint8_t address = fetchZeroPage(cpu);
+
+    uint8_t value = cpu.readMemory(address);
+
+    uint8_t result = cpu.getA() & value;
+
+    cpu.setA(result);
+
+    cpu.setFlag(cpu.FLAG_ZERO, result == 0);
+    cpu.setFlag(cpu.FLAG_NEGATIVE, result & 0x80);
+
+    cpu.setCycles(cpu.getCycles() + 3);
+
+    cpu.setPC(cpu.getPC() + 2);
+}
+
+void Instructions::handleZeroPageSTY(CPU6502 &cpu)
+{
+    uint8_t address = fetchZeroPage(cpu);
+
+    cpu.writeMemory(address, cpu.getY());
+
+    cpu.setCycles(cpu.getCycles() + 3);
+
+    cpu.setPC(cpu.getPC() + 2);
+}
+
+void Instructions::handleBEQ(CPU6502 &cpu)
+{
+    int16_t offset = fetchRelative(cpu);
+
+    if (cpu.isFlagSet(cpu.FLAG_ZERO))
+    {
+        cpu.setPC(cpu.getPC() + 2 + offset);
+
+        if (((cpu.getPC() & 0xFF00) != ((cpu.getPC() + offset) & 0xFF00)))
+        {
+            cpu.setCycles(cpu.getCycles() + 1);
+        }
+    }
+    else
+    {
+
+        cpu.setPC(cpu.getPC() + 2);
+    }
+
+    cpu.setCycles(cpu.getCycles() + 2);
+}
+
 void Instructions::handleORA(CPU6502 &cpu)
 {
     uint8_t value = fetchImmediate(cpu);

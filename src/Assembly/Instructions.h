@@ -24,9 +24,22 @@ class Instructions
     void handleCLD(CPU6502 &cpu);
     void handleTXA(CPU6502 &cpu);
     void handleSTA(CPU6502 &cpu);
+    void handleZeroPageDEC(CPU6502 &cpu);
+    void handleLDXZeroPage(CPU6502 &cpu);
+    void handleTAX(CPU6502 &cpu);
+    void handleCLC(CPU6502 &cpu);
+    void handleLDAIndirectIndexedY(CPU6502 &cpu);
+    void handleADCZeroPage(CPU6502 &cpu);
+    void handleLSRA(CPU6502 &cpu);
+    void handleZeroPageAND(CPU6502 &cpu);
+    void handleZeroPageLDA(CPU6502 &cpu);
+    void handleTYA(CPU6502 &cpu);
     void handleLDXImmediate(CPU6502 &cpu);
+    void handlePHA(CPU6502 &cpu);
+    void handleZeroPageSTY(CPU6502 &cpu);
     void handleTXS(CPU6502 &cpu);
     void handleAND(CPU6502 &cpu);
+    void handleBEQ(CPU6502 &cpu);
     void handleLDAAbsolute(CPU6502 &cpu);
     void handleLDA(CPU6502 &cpu);
     void handleBPL(CPU6502 &cpu);
@@ -52,7 +65,7 @@ class Instructions
     void handleORA(CPU6502 &cpu);
     void handleAbsoluteJMP(CPU6502 &cpu);
     void handleAbsoluteINC(CPU6502 &cpu);
-
+    void handlePLA(CPU6502 &cpu);
     static std::unordered_map<uint8_t, std::string> opcodeMap;
 
   private:

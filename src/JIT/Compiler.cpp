@@ -13,7 +13,22 @@ JITCompiler::JITCompiler(size_t bufferSize)
     opcodeTable[0x4C] = &Instructions::handleAbsoluteJMP;
     opcodeTable[0xEE] = &Instructions::handleAbsoluteINC;
     opcodeTable[0x29] = &Instructions::handleAND;
+    opcodeTable[0xA5] = &Instructions::handleZeroPageLDA;
+    opcodeTable[0x48] = &Instructions::handlePHA;
+    opcodeTable[0x98] = &Instructions::handleTYA;
+    opcodeTable[0xC6] = &Instructions::handleZeroPageDEC;
+    opcodeTable[0x68] = &Instructions::handlePLA;
+
+    opcodeTable[0xB1] = &Instructions::handleLDAIndirectIndexedY;
+    opcodeTable[0xA6] = &Instructions::handleLDXZeroPage;
+    opcodeTable[0x65] = &Instructions::handleADCZeroPage;
+    opcodeTable[0x18] = &Instructions::handleCLC;
+    opcodeTable[0xAA] = &Instructions::handleTAX;
+    opcodeTable[0x4A] = &Instructions::handleLSRA;
+    opcodeTable[0x25] = &Instructions::handleZeroPageAND;
+    opcodeTable[0x84] = &Instructions::handleZeroPageSTY;
     opcodeTable[0x8A] = &Instructions::handleTXA;
+    opcodeTable[0xF0] = &Instructions::handleBEQ;
     opcodeTable[0xC8] = &Instructions::handleINY;
     opcodeTable[0x2C] = &Instructions::handleAbsBIT;
     opcodeTable[0x60] = &Instructions::handleRTS;

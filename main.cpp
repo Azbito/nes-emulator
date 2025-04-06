@@ -15,21 +15,16 @@
 
 void runCPU(CPU6502 &cpu, JITCompiler &jit, PPU &ppu)
 {
-    printf("\n\n OPCODES:\n");
-
     while (true)
     {
         if (cpu.getCycles() == 0)
         {
             uint8_t opcode = cpu.readMemory(cpu.getPC());
-            printf(" %02X", opcode);
             jit.compileOpcode(opcode, cpu);
         }
 
         cpu.clock();
-        ppu.clock();
-        ppu.clock();
-        ppu.clock();
+        ppu.clock(); // Apenas uma chamada por ciclo do CPU
     }
 }
 

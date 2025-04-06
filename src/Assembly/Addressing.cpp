@@ -19,12 +19,14 @@ uint8_t Instructions::fetchZeroPage(CPU6502 &cpu)
 
 uint8_t Instructions::fetchZeroPageX(CPU6502 &cpu)
 {
-    return cpu.readMemory((cpu.readMemory(cpu.getPC() + 1) + cpu.getX()) & 0xFF);
+    return cpu.readMemory((cpu.readMemory(cpu.getPC() + 1) + cpu.getX()) &
+                          0xFF);
 }
 
 uint8_t Instructions::fetchZeroPageY(CPU6502 &cpu)
 {
-    return cpu.readMemory((cpu.readMemory(cpu.getPC() + 1) + cpu.getY()) & 0xFF);
+    return cpu.readMemory((cpu.readMemory(cpu.getPC() + 1) + cpu.getY()) &
+                          0xFF);
 }
 
 uint8_t Instructions::fetchAbsolute(CPU6502 &cpu)
@@ -75,5 +77,6 @@ uint8_t Instructions::fetchIndirectIndexedY(CPU6502 &cpu)
 
 uint16_t Instructions::fetchAbsoluteAddress(CPU6502 &cpu)
 {
-    return cpu.readMemory(cpu.getPC() + 1) | (cpu.readMemory(cpu.getPC() + 2) << 8);
+    return cpu.readMemory(cpu.getPC() + 1) |
+           (cpu.readMemory(cpu.getPC() + 2) << 8);
 }
