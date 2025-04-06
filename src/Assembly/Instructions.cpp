@@ -1,4 +1,5 @@
 #include "Assembly/Instructions.h"
+#include "CPU/CPU6502.h"
 #include <iostream>
 
 std::unordered_map<uint8_t, std::string> Instructions::opcodeMap = {
@@ -51,7 +52,7 @@ std::unordered_map<uint8_t, std::string> Instructions::opcodeMap = {
 
 };
 
-void Instructions::handleBPL(CPU6502 &cpu)
+void Instructions::handleBPL(CPU6502 &cpu, Bus &bus)
 {
     int8_t offset = cpu.readMemory(cpu.getPC() + 1);
 
@@ -67,9 +68,9 @@ void Instructions::handleBPL(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 2);
 }
 
-void Instructions::handleAbsXLDA(CPU6502 &cpu)
+void Instructions::handleAbsXLDA(CPU6502 &cpu, Bus &bus)
 {
-    uint16_t address = fetchAbsoluteX(cpu);
+    uint16_t address = fetchAbsoluteX(cpu, bus);
     uint8_t value = cpu.readMemory(address);
     cpu.setA(value);
     cpu.updateZNFlags(cpu.getA());
@@ -77,16 +78,16 @@ void Instructions::handleAbsXLDA(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 3);
 }
 
-void Instructions::handleImmLDY(CPU6502 &cpu)
+void Instructions::handleImmLDY(CPU6502 &cpu, Bus &bus)
 {
-    uint8_t value = fetchImmediate(cpu);
+    uint8_t value = fetchImmediate(cpu, bus);
     cpu.setY(value);
     cpu.updateZNFlags(cpu.getY());
     cpu.setCycles(cpu.getCycles() + 2);
     cpu.setPC(cpu.getPC() + 2);
 }
 
-void Instructions::handleDEX(CPU6502 &cpu)
+void Instructions::handleDEX(CPU6502 &cpu, Bus &bus)
 {
     cpu.setX(cpu.getX() - 1);
     cpu.updateZNFlags(cpu.getX());
@@ -94,9 +95,9 @@ void Instructions::handleDEX(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 1);
 }
 
-void Instructions::handleBNE(CPU6502 &cpu)
+void Instructions::handleBNE(CPU6502 &cpu, Bus &bus)
 {
-    int16_t targetAddr = fetchRelative(cpu);
+    int16_t targetAddr = fetchRelative(cpu, bus);
 
     if (!cpu.isFlagSet(cpu.FLAG_ZERO))
     {
@@ -109,23 +110,23 @@ void Instructions::handleBNE(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 2);
 }
 
-void Instructions::handleZeroPageSTA(CPU6502 &cpu)
+void Instructions::handleZeroPageSTA(CPU6502 &cpu, Bus &bus)
 {
-    uint8_t address = fetchZeroPage(cpu);
+    uint8_t address = fetchZeroPage(cpu, bus);
     cpu.writeMemory(address, cpu.getA());
     cpu.setCycles(cpu.getCycles() + 3);
     cpu.setPC(cpu.getPC() + 2);
 }
 
-void Instructions::handleZeroPageSTX(CPU6502 &cpu)
+void Instructions::handleZeroPageSTX(CPU6502 &cpu, Bus &bus)
 {
-    uint8_t address = fetchZeroPage(cpu);
+    uint8_t address = fetchZeroPage(cpu, bus);
     cpu.writeMemory(address, cpu.getX());
     cpu.setCycles(cpu.getCycles() + 3);
     cpu.setPC(cpu.getPC() + 2);
 }
 
-void Instructions::handleDEY(CPU6502 &cpu)
+void Instructions::handleDEY(CPU6502 &cpu, Bus &bus)
 {
     cpu.setY(cpu.getY() - 1);
     cpu.updateZNFlags(cpu.getY());
@@ -133,18 +134,18 @@ void Instructions::handleDEY(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 1);
 }
 
-void Instructions::handleIndirectYSTA(CPU6502 &cpu)
+void Instructions::handleIndirectYSTA(CPU6502 &cpu, Bus &bus)
 {
-    uint16_t address = fetchIndirectIndexedY(cpu);
+    uint16_t address = fetchIndirectIndexedY(cpu, bus);
     cpu.writeMemory(address, cpu.getA());
 
     cpu.setCycles(cpu.getCycles() + 6);
     cpu.setPC(cpu.getPC() + 2);
 }
 
-void Instructions::handleRelBCC(CPU6502 &cpu)
+void Instructions::handleRelBCC(CPU6502 &cpu, Bus &bus)
 {
-    int8_t offset = fetchImmediate(cpu);
+    int8_t offset = fetchImmediate(cpu, bus);
 
     if (!cpu.getFlag(cpu.FLAG_CARRY))
     {
@@ -156,7 +157,7 @@ void Instructions::handleRelBCC(CPU6502 &cpu)
     cpu.setCycles(cpu.getCycles() + 2);
 }
 
-void Instructions::handleRTS(CPU6502 &cpu)
+void Instructions::handleRTS(CPU6502 &cpu, Bus &bus)
 {
     uint8_t low = cpu.popStack();
     uint8_t high = cpu.popStack();
@@ -165,9 +166,9 @@ void Instructions::handleRTS(CPU6502 &cpu)
     cpu.setCycles(cpu.getCycles() + 6);
 }
 
-void Instructions::handleImmCPY(CPU6502 &cpu)
+void Instructions::handleImmCPY(CPU6502 &cpu, Bus &bus)
 {
-    uint8_t value = fetchImmediate(cpu);
+    uint8_t value = fetchImmediate(cpu, bus);
     uint8_t result = cpu.getY() - value;
 
     cpu.setFlag(cpu.FLAG_CARRY, cpu.getY() >= value);
@@ -178,9 +179,9 @@ void Instructions::handleImmCPY(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 2);
 }
 
-void Instructions::handleImmCPX(CPU6502 &cpu)
+void Instructions::handleImmCPX(CPU6502 &cpu, Bus &bus)
 {
-    uint8_t value = fetchImmediate(cpu);
+    uint8_t value = fetchImmediate(cpu, bus);
     uint8_t result = cpu.getX() - value;
 
     cpu.setFlag(cpu.FLAG_CARRY, cpu.getX() >= value);
@@ -191,9 +192,9 @@ void Instructions::handleImmCPX(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 2);
 }
 
-void Instructions::handleAbsBIT(CPU6502 &cpu)
+void Instructions::handleAbsBIT(CPU6502 &cpu, Bus &bus)
 {
-    uint8_t address = fetchAbsolute(cpu);
+    uint8_t address = fetchAbsolute(cpu, bus);
     uint8_t value = cpu.readMemory(address);
 
     cpu.setFlag(cpu.FLAG_ZERO, (cpu.getA() & value) == 0);
@@ -205,17 +206,17 @@ void Instructions::handleAbsBIT(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 3);
 }
 
-void Instructions::handleAbsoluteYSTA(CPU6502 &cpu)
+void Instructions::handleAbsoluteYSTA(CPU6502 &cpu, Bus &bus)
 {
-    uint16_t address = fetchAbsoluteAddress(cpu) + cpu.getY();
+    uint16_t address = fetchAbsoluteAddress(cpu, bus) + cpu.getY();
     cpu.writeMemory(address, cpu.getA());
     cpu.setCycles(cpu.getCycles() + 5);
     cpu.setPC(cpu.getPC() + 3);
 }
 
-void Instructions::handleAbsoluteINC(CPU6502 &cpu)
+void Instructions::handleAbsoluteINC(CPU6502 &cpu, Bus &bus)
 {
-    uint8_t value = fetchAbsolute(cpu);
+    uint8_t value = fetchAbsolute(cpu, bus);
 
     cpu.updateZNFlags(value++);
 
@@ -223,25 +224,25 @@ void Instructions::handleAbsoluteINC(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 3);
 }
 
-void Instructions::handleAbsoluteJMP(CPU6502 &cpu)
+void Instructions::handleAbsoluteJMP(CPU6502 &cpu, Bus &bus)
 {
-    uint16_t address = fetchWord(cpu);
+    uint16_t address = fetchWord(cpu, bus);
     cpu.setPC(address);
     cpu.setCycles(cpu.getCycles() + 3);
 }
 
-void Instructions::handleAND(CPU6502 &cpu)
+void Instructions::handleAND(CPU6502 &cpu, Bus &bus)
 {
-    uint8_t value = fetchImmediate(cpu);
+    uint8_t value = fetchImmediate(cpu, bus);
     cpu.setA(cpu.getA() & value);
     cpu.updateZNFlags(cpu.getA());
     cpu.setCycles(cpu.getCycles() + 2);
     cpu.setPC(cpu.getPC() + 2);
 }
 
-void Instructions::handleZeroPageLDA(CPU6502 &cpu)
+void Instructions::handleZeroPageLDA(CPU6502 &cpu, Bus &bus)
 {
-    uint8_t address = fetchZeroPage(cpu);
+    uint8_t address = fetchZeroPage(cpu, bus);
 
     uint8_t value = cpu.readMemory(address);
     cpu.setA(value);
@@ -254,7 +255,7 @@ void Instructions::handleZeroPageLDA(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 2);
 }
 
-void Instructions::handleTYA(CPU6502 &cpu)
+void Instructions::handleTYA(CPU6502 &cpu, Bus &bus)
 {
     cpu.setA(cpu.getY());
 
@@ -266,7 +267,7 @@ void Instructions::handleTYA(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 1);
 }
 
-void Instructions::handlePHA(CPU6502 &cpu)
+void Instructions::handlePHA(CPU6502 &cpu, Bus &bus)
 {
     cpu.writeMemory(0x0100 + cpu.getSP(), cpu.getA());
 
@@ -277,9 +278,9 @@ void Instructions::handlePHA(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 1);
 }
 
-void Instructions::handleZeroPageDEC(CPU6502 &cpu)
+void Instructions::handleZeroPageDEC(CPU6502 &cpu, Bus &bus)
 {
-    uint8_t address = fetchZeroPage(cpu);
+    uint8_t address = fetchZeroPage(cpu, bus);
 
     uint8_t value = cpu.readMemory(address);
 
@@ -295,7 +296,7 @@ void Instructions::handleZeroPageDEC(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 2);
 }
 
-void Instructions::handlePLA(CPU6502 &cpu)
+void Instructions::handlePLA(CPU6502 &cpu, Bus &bus)
 {
     uint8_t value = cpu.readMemory(0x100 + cpu.getSP());
 
@@ -309,10 +310,10 @@ void Instructions::handlePLA(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 1);
 }
 
-void Instructions::handleLDAIndirectIndexedY(CPU6502 &cpu)
+void Instructions::handleLDAIndirectIndexedY(CPU6502 &cpu, Bus &bus)
 {
 
-    uint8_t value = fetchIndirectIndexedY(cpu);
+    uint8_t value = fetchIndirectIndexedY(cpu, bus);
 
     cpu.setA(value);
 
@@ -323,7 +324,7 @@ void Instructions::handleLDAIndirectIndexedY(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 2);
 }
 
-void Instructions::handleLDXZeroPage(CPU6502 &cpu)
+void Instructions::handleLDXZeroPage(CPU6502 &cpu, Bus &bus)
 {
     uint8_t addr = cpu.readMemory(cpu.getPC() + 1);
 
@@ -339,7 +340,7 @@ void Instructions::handleLDXZeroPage(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 2);
 }
 
-void Instructions::handleADCZeroPage(CPU6502 &cpu)
+void Instructions::handleADCZeroPage(CPU6502 &cpu, Bus &bus)
 {
     uint8_t addr = cpu.readMemory(cpu.getPC() + 1);
 
@@ -359,7 +360,7 @@ void Instructions::handleADCZeroPage(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 2);
 }
 
-void Instructions::handleCLC(CPU6502 &cpu)
+void Instructions::handleCLC(CPU6502 &cpu, Bus &bus)
 {
     cpu.setFlag(cpu.FLAG_CARRY, false);
 
@@ -368,7 +369,7 @@ void Instructions::handleCLC(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 1);
 }
 
-void Instructions::handleTAX(CPU6502 &cpu)
+void Instructions::handleTAX(CPU6502 &cpu, Bus &bus)
 {
     uint8_t value = cpu.getA();
     cpu.setX(value);
@@ -381,7 +382,7 @@ void Instructions::handleTAX(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 1);
 }
 
-void Instructions::handleLSRA(CPU6502 &cpu)
+void Instructions::handleLSRA(CPU6502 &cpu, Bus &bus)
 {
     uint8_t value = cpu.getA();
 
@@ -400,9 +401,9 @@ void Instructions::handleLSRA(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 1);
 }
 
-void Instructions::handleZeroPageAND(CPU6502 &cpu)
+void Instructions::handleZeroPageAND(CPU6502 &cpu, Bus &bus)
 {
-    uint8_t address = fetchZeroPage(cpu);
+    uint8_t address = fetchZeroPage(cpu, bus);
 
     uint8_t value = cpu.readMemory(address);
 
@@ -418,9 +419,9 @@ void Instructions::handleZeroPageAND(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 2);
 }
 
-void Instructions::handleZeroPageSTY(CPU6502 &cpu)
+void Instructions::handleZeroPageSTY(CPU6502 &cpu, Bus &bus)
 {
-    uint8_t address = fetchZeroPage(cpu);
+    uint8_t address = fetchZeroPage(cpu, bus);
 
     cpu.writeMemory(address, cpu.getY());
 
@@ -429,9 +430,9 @@ void Instructions::handleZeroPageSTY(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 2);
 }
 
-void Instructions::handleBEQ(CPU6502 &cpu)
+void Instructions::handleBEQ(CPU6502 &cpu, Bus &bus)
 {
-    int16_t offset = fetchRelative(cpu);
+    int16_t offset = fetchRelative(cpu, bus);
 
     if (cpu.isFlagSet(cpu.FLAG_ZERO))
     {
@@ -451,9 +452,9 @@ void Instructions::handleBEQ(CPU6502 &cpu)
     cpu.setCycles(cpu.getCycles() + 2);
 }
 
-void Instructions::handleORA(CPU6502 &cpu)
+void Instructions::handleORA(CPU6502 &cpu, Bus &bus)
 {
-    uint8_t value = fetchImmediate(cpu);
+    uint8_t value = fetchImmediate(cpu, bus);
     cpu.setA(cpu.getA() | value);
     cpu.updateZNFlags(cpu.getA());
 
@@ -461,7 +462,7 @@ void Instructions::handleORA(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 2);
 }
 
-void Instructions::handleINY(CPU6502 &cpu)
+void Instructions::handleINY(CPU6502 &cpu, Bus &bus)
 {
     cpu.setY(cpu.getY() + 1);
     cpu.updateZNFlags(cpu.getY());
@@ -470,9 +471,9 @@ void Instructions::handleINY(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 1);
 }
 
-void Instructions::handleZeroPageBIT(CPU6502 &cpu)
+void Instructions::handleZeroPageBIT(CPU6502 &cpu, Bus &bus)
 {
-    uint8_t address = fetchZeroPage(cpu);
+    uint8_t address = fetchZeroPage(cpu, bus);
     uint8_t value = cpu.readMemory(address);
 
     cpu.setFlag(cpu.FLAG_ZERO, (cpu.getA() & value) == 0);
@@ -484,9 +485,9 @@ void Instructions::handleZeroPageBIT(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 2);
 }
 
-void Instructions::handleJSR(CPU6502 &cpu)
+void Instructions::handleJSR(CPU6502 &cpu, Bus &bus)
 {
-    uint16_t targetAddr = fetchAbsoluteAddress(cpu);
+    uint16_t targetAddr = fetchAbsoluteAddress(cpu, bus);
     uint16_t returnAddr = cpu.getPC() + 2;
 
     cpu.pushToStack((returnAddr >> 8) & 0xFF);
@@ -496,9 +497,9 @@ void Instructions::handleJSR(CPU6502 &cpu)
     cpu.setCycles(cpu.getCycles() + 6);
 }
 
-void Instructions::handleImmCMP(CPU6502 &cpu)
+void Instructions::handleImmCMP(CPU6502 &cpu, Bus &bus)
 {
-    uint8_t value = fetchImmediate(cpu);
+    uint8_t value = fetchImmediate(cpu, bus);
     uint8_t result = cpu.getA() - value;
 
     cpu.setFlag(cpu.FLAG_CARRY, cpu.getA() >= value);
@@ -509,9 +510,9 @@ void Instructions::handleImmCMP(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 2);
 }
 
-void Instructions::handleRelBCS(CPU6502 &cpu)
+void Instructions::handleRelBCS(CPU6502 &cpu, Bus &bus)
 {
-    int16_t newPC = fetchRelative(cpu);
+    int16_t newPC = fetchRelative(cpu, bus);
 
     if (cpu.getFlag(cpu.FLAG_CARRY))
     {
@@ -524,9 +525,9 @@ void Instructions::handleRelBCS(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 2);
 }
 
-void Instructions::handleISCAbsoluteX(CPU6502 &cpu)
+void Instructions::handleISCAbsoluteX(CPU6502 &cpu, Bus &bus)
 {
-    uint16_t address = fetchAbsoluteAddress(cpu) + cpu.getX();
+    uint16_t address = fetchAbsoluteAddress(cpu, bus) + cpu.getX();
     uint8_t value = cpu.readMemory(address);
     value--;
     cpu.writeMemory(address, value);
@@ -575,15 +576,15 @@ void Instructions::handleISCAbsoluteX(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 3);
 }
 
-void Instructions::handleADC(CPU6502 &cpu)
+void Instructions::handleADC(CPU6502 &cpu, Bus &bus)
 {
-    uint8_t value = fetchImmediate(cpu);
+    uint8_t value = fetchImmediate(cpu, bus);
     cpu.setA(cpu.getA() + value);
     cpu.setCycles(cpu.getCycles() + 2);
     cpu.setPC(cpu.getPC() + 2);
 }
 
-void Instructions::handleBRK(CPU6502 &cpu)
+void Instructions::handleBRK(CPU6502 &cpu, Bus &bus)
 {
     cpu.pushToStack16(cpu.getPC() + 2);
     cpu.pushToStack(cpu.getP());
@@ -592,38 +593,38 @@ void Instructions::handleBRK(CPU6502 &cpu)
     cpu.setCycles(cpu.getCycles() + 7);
 }
 
-void Instructions::handleORAAbsoluteY(CPU6502 &cpu)
+void Instructions::handleORAAbsoluteY(CPU6502 &cpu, Bus &bus)
 {
-    uint16_t address = fetchAbsoluteAddress(cpu) + cpu.getY();
+    uint16_t address = fetchAbsoluteAddress(cpu, bus) + cpu.getY();
     uint8_t value = cpu.readMemory(address);
     cpu.setA(cpu.getA() | value);
     cpu.setCycles(cpu.getCycles() + 4);
     cpu.setPC(cpu.getPC() + 3);
 }
 
-void Instructions::handleNOP(CPU6502 &cpu)
+void Instructions::handleNOP(CPU6502 &cpu, Bus &bus)
 {
     cpu.setCycles(cpu.getCycles() + 2);
     cpu.setPC(cpu.getPC() + 1);
 }
 
-void Instructions::handleNOPIMM(CPU6502 &cpu)
+void Instructions::handleNOPIMM(CPU6502 &cpu, Bus &bus)
 {
-    fetchImmediate(cpu);
+    fetchImmediate(cpu, bus);
     cpu.setCycles(cpu.getCycles() + 2);
     cpu.setPC(cpu.getPC() + 2);
 }
 
-void Instructions::handleNOPAbsoluteX(CPU6502 &cpu)
+void Instructions::handleNOPAbsoluteX(CPU6502 &cpu, Bus &bus)
 {
-    uint16_t addr = fetchAbsoluteAddress(cpu) + cpu.getX();
+    uint16_t addr = fetchAbsoluteAddress(cpu, bus) + cpu.getX();
     cpu.setCycles(cpu.getCycles() + 4);
     cpu.setPC(cpu.getPC() + 3);
 }
 
-void Instructions::handleASLAbsoluteX(CPU6502 &cpu)
+void Instructions::handleASLAbsoluteX(CPU6502 &cpu, Bus &bus)
 {
-    uint16_t addr = fetchAbsoluteAddress(cpu) + cpu.getX();
+    uint16_t addr = fetchAbsoluteAddress(cpu, bus) + cpu.getX();
     uint8_t value = cpu.readMemory(addr);
     uint8_t result = value << 1;
 
@@ -635,9 +636,9 @@ void Instructions::handleASLAbsoluteX(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 3);
 }
 
-void Instructions::handleEORZP(CPU6502 &cpu)
+void Instructions::handleEORZP(CPU6502 &cpu, Bus &bus)
 {
-    uint8_t address = fetchZeroPage(cpu);
+    uint8_t address = fetchZeroPage(cpu, bus);
     uint8_t operand = cpu.readMemory(address);
     cpu.setA(cpu.getA() ^ operand);
     cpu.updateZNFlags(cpu.getA());
@@ -645,7 +646,7 @@ void Instructions::handleEORZP(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 2);
 }
 
-void Instructions::handleTXA(CPU6502 &cpu)
+void Instructions::handleTXA(CPU6502 &cpu, Bus &bus)
 {
     cpu.setA(cpu.getX());
 
@@ -655,16 +656,16 @@ void Instructions::handleTXA(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 1);
 }
 
-void Instructions::handleTXS(CPU6502 &cpu)
+void Instructions::handleTXS(CPU6502 &cpu, Bus &bus)
 {
     cpu.setSP(cpu.getX());
     cpu.setCycles(cpu.getCycles() + 2);
     cpu.setPC(cpu.getPC() + 1);
 }
 
-void Instructions::handleLDAAbsolute(CPU6502 &cpu)
+void Instructions::handleLDAAbsolute(CPU6502 &cpu, Bus &bus)
 {
-    uint16_t address = fetchAbsoluteAddress(cpu);
+    uint16_t address = fetchAbsoluteAddress(cpu, bus);
     uint8_t value = cpu.readMemory(address);
     cpu.setA(value);
     cpu.updateZNFlags(cpu.getA());
@@ -672,37 +673,37 @@ void Instructions::handleLDAAbsolute(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 3);
 }
 
-void Instructions::handleLDXImmediate(CPU6502 &cpu)
+void Instructions::handleLDXImmediate(CPU6502 &cpu, Bus &bus)
 {
-    uint8_t value = fetchImmediate(cpu);
+    uint8_t value = fetchImmediate(cpu, bus);
     cpu.setX(value);
     cpu.updateZNFlags(cpu.getX());
     cpu.setCycles(cpu.getCycles() + 2);
     cpu.setPC(cpu.getPC() + 2);
 }
 
-void Instructions::handleSTA(CPU6502 &cpu)
+void Instructions::handleSTA(CPU6502 &cpu, Bus &bus)
 {
-    uint16_t address = fetchAbsoluteAddress(cpu);
+    uint16_t address = fetchAbsoluteAddress(cpu, bus);
     cpu.writeMemory(address, cpu.getA());
     cpu.setCycles(cpu.getCycles() + 4);
     cpu.setPC(cpu.getPC() + 3);
 }
 
-void Instructions::handleKIL(CPU6502 &cpu)
+void Instructions::handleKIL(CPU6502 &cpu, Bus &bus)
 {
     printf("I'm dead x.x");
     cpu.setCycles(cpu.getCycles() + 1);
 }
 
-void Instructions::handleCLD(CPU6502 &cpu)
+void Instructions::handleCLD(CPU6502 &cpu, Bus &bus)
 {
     cpu.setP(cpu.getP() & ~0x08);
     cpu.setCycles(cpu.getCycles() + 2);
     cpu.setPC(cpu.getPC() + 1);
 }
 
-void Instructions::handleSEI(CPU6502 &cpu)
+void Instructions::handleSEI(CPU6502 &cpu, Bus &bus)
 {
     cpu.setFlag(cpu.FLAG_INTERRUPT, true);
 
@@ -710,9 +711,9 @@ void Instructions::handleSEI(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 1);
 }
 
-void Instructions::handleLSRAbsolute(CPU6502 &cpu)
+void Instructions::handleLSRAbsolute(CPU6502 &cpu, Bus &bus)
 {
-    uint16_t addr = fetchAbsoluteAddress(cpu);
+    uint16_t addr = fetchAbsoluteAddress(cpu, bus);
     uint8_t value = cpu.readMemory(addr);
     uint8_t carry = value & 0x01;
     value >>= 1;
@@ -726,9 +727,9 @@ void Instructions::handleLSRAbsolute(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 3);
 }
 
-void Instructions::handleORAIndirectIndexedX(CPU6502 &cpu)
+void Instructions::handleORAIndirectIndexedX(CPU6502 &cpu, Bus &bus)
 {
-    uint16_t baseAddr = fetchZeroPage(cpu);
+    uint16_t baseAddr = fetchZeroPage(cpu, bus);
     uint16_t addr = (cpu.readMemory(baseAddr + cpu.getX())) |
                     (cpu.readMemory(baseAddr + cpu.getX() + 1) << 8);
     uint8_t value = cpu.readMemory(addr);
@@ -738,9 +739,9 @@ void Instructions::handleORAIndirectIndexedX(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 2);
 }
 
-void Instructions::handleSREIndirectIndexed(CPU6502 &cpu)
+void Instructions::handleSREIndirectIndexed(CPU6502 &cpu, Bus &bus)
 {
-    uint16_t addr = fetchIndirect(cpu) + cpu.getY();
+    uint16_t addr = fetchIndirect(cpu, bus) + cpu.getY();
     uint8_t value = cpu.readMemory(addr);
 
     uint8_t carry = value & 0x01;
@@ -756,9 +757,9 @@ void Instructions::handleSREIndirectIndexed(CPU6502 &cpu)
     cpu.setPC(cpu.getPC() + 3);
 }
 
-void Instructions::handleLDA(CPU6502 &cpu)
+void Instructions::handleLDA(CPU6502 &cpu, Bus &bus)
 {
-    cpu.setA(fetchImmediate(cpu));
+    cpu.setA(fetchImmediate(cpu, bus));
     cpu.updateZNFlags(cpu.getA());
     cpu.setCycles(cpu.getCycles() + 2);
     cpu.setPC(cpu.getPC() + 2);

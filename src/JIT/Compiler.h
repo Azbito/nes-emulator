@@ -3,13 +3,16 @@
 
 #define OPCODE_RANGE 256
 
-#include "Assembly/Instructions.h"
 #include <array>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <iostream>
 #include <windows.h>
+
+class CPU6502;
+class Instructions;
+class Bus;
 
 class JITCompiler
 {
@@ -19,9 +22,17 @@ class JITCompiler
 
     void compileOpcode(uint8_t opcode, CPU6502 &cpu);
 
+    inline void connectBus(Bus *busPtr)
+    {
+        bus = busPtr;
+    }
+
   private:
-    Instructions asm_instructions;
-    void (Instructions::*opcodeTable[OPCODE_RANGE])(CPU6502 &cpu);
+    Instructions *asm_instructions;
+    Bus *bus;
+
+    void (Instructions::*opcodeTable[OPCODE_RANGE])(CPU6502 &cpu,
+                                                    Bus &bus) = {nullptr};
 };
 
 #endif

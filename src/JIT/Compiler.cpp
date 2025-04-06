@@ -1,12 +1,19 @@
 
 #include "JIT/Compiler.h"
+#include "Assembly/Instructions.h"
+
 #include <bitset>
 #include <iomanip>
 
-JITCompiler::~JITCompiler() = default;
+JITCompiler::~JITCompiler()
+{
+    delete asm_instructions;
+};
 
 JITCompiler::JITCompiler(size_t bufferSize)
 {
+    asm_instructions = new Instructions();
+
     opcodeTable[0x24] = &Instructions::handleZeroPageBIT;
     opcodeTable[0x09] = &Instructions::handleORA;
     opcodeTable[0x99] = &Instructions::handleAbsoluteYSTA;
@@ -74,7 +81,8 @@ void JITCompiler::compileOpcode(uint8_t opcode, CPU6502 &cpu)
 {
     if (opcodeTable[opcode])
     {
-        (asm_instructions.*opcodeTable[opcode])(cpu);
+        printf(" 0x%02X", opcode);
+        (asm_instructions->*opcodeTable[opcode])(cpu, *bus);
     }
     else
     {

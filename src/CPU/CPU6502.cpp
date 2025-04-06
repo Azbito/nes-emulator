@@ -1,6 +1,7 @@
-#include "CPU6502.h"
+#include "CPU/CPU6502.h"
+#include "Bus/Bus.h"
 
-CPU6502::CPU6502(PPU &ppuRef) : ppu(&ppuRef)
+CPU6502::CPU6502()
 {
     setA(0);
     setX(0);
@@ -13,8 +14,8 @@ CPU6502::CPU6502(PPU &ppuRef) : ppu(&ppuRef)
 
 void CPU6502::reset()
 {
-    uint16_t low = readMemory(0xFFFC);
-    uint16_t high = readMemory(0xFFFD);
+    uint16_t low = bus->read(0xFFFC);
+    uint16_t high = bus->read(0xFFFD);
 
     setPC((high << 8) | low);
 
@@ -59,13 +60,6 @@ bool CPU6502::isNegativeFlagClean()
 
 void CPU6502::writeMemory(uint16_t address, uint8_t value)
 {
-    if (address >= ppu->registers.PPUCTRL && address <= 0x3FFF)
-    {
-        uint16_t reg = 0x2000 + (address % 8);
-        ppu->writeRegister(reg, value);
-        return;
-    }
-
     m_RAM[address] = value;
 }
 
@@ -76,24 +70,6 @@ void CPU6502::clock()
 
 uint8_t CPU6502::readMemory(uint16_t address)
 {
-    if (address == ppu->registers.PPUSTATUS)
-    {
-        uint8_t value = ppu->getStatus();
-
-        value |= (ppu->getVBlank() ? 0x80 : 0x00);
-
-        ppu->setVerticalBlank(false);
-        ppu->setAddressLatch(0);
-
-        return value & 0xE0;
-    }
-
-    if (address >= ppu->registers.PPUCTRL && address <= 0x3FFF)
-    {
-        uint16_t reg = 0x2000 + (address % 8);
-        return ppu->getRegister(reg);
-    }
-
     return m_RAM[address];
 }
 
@@ -113,4 +89,10 @@ void CPU6502::setFlag(uint8_t flag, bool value)
 bool CPU6502::isFlagSet(uint8_t flag) const
 {
     return m_P & flag;
+}
+
+void CPU6502::step(JITCompiler &jit)
+{
+    uint8_t opcode = bus->read(m_PC);
+    jit.compileOpcode(opcode, *this);
 }

@@ -1,87 +1,91 @@
 #ifndef INSTRUCTIONS_H
 #define INSTRUCTIONS_H
 
-#include "CPU/CPU6502.h"
+#include <cstdint>
+#include <string>
 #include <unordered_map>
+
+class CPU6502;
+class Bus;
 
 class Instructions
 {
   public:
-    void handleADC(CPU6502 &cpu);
-    void handleBRK(CPU6502 &cpu);
-    void handleORAAbsoluteY(CPU6502 &cpu);
-    void handleNOP(CPU6502 &cpu);
-    void handleNOPAbsoluteX(CPU6502 &cpu);
-    void handleASLAbsoluteX(CPU6502 &cpu);
-    void handleNOPIMM(CPU6502 &cpu);
-    void handleEORZP(CPU6502 &cpu);
-    void handleSREIndirectIndexed(CPU6502 &cpu);
-    void handleORAIndirectIndexedX(CPU6502 &cpu);
-    void handleKIL(CPU6502 &cpu);
-    void handleLSRAbsolute(CPU6502 &cpu);
-    void handleSEI(CPU6502 &cpu);
-    void handleDEX(CPU6502 &cpu);
-    void handleCLD(CPU6502 &cpu);
-    void handleTXA(CPU6502 &cpu);
-    void handleSTA(CPU6502 &cpu);
-    void handleZeroPageDEC(CPU6502 &cpu);
-    void handleLDXZeroPage(CPU6502 &cpu);
-    void handleTAX(CPU6502 &cpu);
-    void handleCLC(CPU6502 &cpu);
-    void handleLDAIndirectIndexedY(CPU6502 &cpu);
-    void handleADCZeroPage(CPU6502 &cpu);
-    void handleLSRA(CPU6502 &cpu);
-    void handleZeroPageAND(CPU6502 &cpu);
-    void handleZeroPageLDA(CPU6502 &cpu);
-    void handleTYA(CPU6502 &cpu);
-    void handleLDXImmediate(CPU6502 &cpu);
-    void handlePHA(CPU6502 &cpu);
-    void handleZeroPageSTY(CPU6502 &cpu);
-    void handleTXS(CPU6502 &cpu);
-    void handleAND(CPU6502 &cpu);
-    void handleBEQ(CPU6502 &cpu);
-    void handleLDAAbsolute(CPU6502 &cpu);
-    void handleLDA(CPU6502 &cpu);
-    void handleBPL(CPU6502 &cpu);
-    void handleISCAbsoluteX(CPU6502 &cpu);
-    void handleImmLDY(CPU6502 &cpu);
-    void handleAbsXLDA(CPU6502 &cpu);
-    void handleImmCMP(CPU6502 &cpu);
-    void handleRelBCS(CPU6502 &cpu);
-    void handleBNE(CPU6502 &cpu);
-    void handleJSR(CPU6502 &cpu);
-    void handleZeroPageSTA(CPU6502 &cpu);
-    void handleZeroPageSTX(CPU6502 &cpu);
-    void handleImmCPX(CPU6502 &cpu);
-    void handleRelBCC(CPU6502 &cpu);
-    void handleDEY(CPU6502 &cpu);
-    void handleImmCPY(CPU6502 &cpu);
-    void handleRTS(CPU6502 &cpu);
-    void handleIndirectYSTA(CPU6502 &cpu);
-    void handleZeroPageBIT(CPU6502 &cpu);
-    void handleAbsBIT(CPU6502 &cpu);
-    void handleAbsoluteYSTA(CPU6502 &cpu);
-    void handleINY(CPU6502 &cpu);
-    void handleORA(CPU6502 &cpu);
-    void handleAbsoluteJMP(CPU6502 &cpu);
-    void handleAbsoluteINC(CPU6502 &cpu);
-    void handlePLA(CPU6502 &cpu);
+    void handleADC(CPU6502 &cpu, Bus &bus);
+    void handleBRK(CPU6502 &cpu, Bus &bus);
+    void handleORAAbsoluteY(CPU6502 &cpu, Bus &bus);
+    void handleNOP(CPU6502 &cpu, Bus &bus);
+    void handleNOPAbsoluteX(CPU6502 &cpu, Bus &bus);
+    void handleASLAbsoluteX(CPU6502 &cpu, Bus &bus);
+    void handleNOPIMM(CPU6502 &cpu, Bus &bus);
+    void handleEORZP(CPU6502 &cpu, Bus &bus);
+    void handleSREIndirectIndexed(CPU6502 &cpu, Bus &bus);
+    void handleORAIndirectIndexedX(CPU6502 &cpu, Bus &bus);
+    void handleKIL(CPU6502 &cpu, Bus &bus);
+    void handleLSRAbsolute(CPU6502 &cpu, Bus &bus);
+    void handleSEI(CPU6502 &cpu, Bus &bus);
+    void handleDEX(CPU6502 &cpu, Bus &bus);
+    void handleCLD(CPU6502 &cpu, Bus &bus);
+    void handleTXA(CPU6502 &cpu, Bus &bus);
+    void handleSTA(CPU6502 &cpu, Bus &bus);
+    void handleZeroPageDEC(CPU6502 &cpu, Bus &bus);
+    void handleLDXZeroPage(CPU6502 &cpu, Bus &bus);
+    void handleTAX(CPU6502 &cpu, Bus &bus);
+    void handleCLC(CPU6502 &cpu, Bus &bus);
+    void handleLDAIndirectIndexedY(CPU6502 &cpu, Bus &bus);
+    void handleADCZeroPage(CPU6502 &cpu, Bus &bus);
+    void handleLSRA(CPU6502 &cpu, Bus &bus);
+    void handleZeroPageAND(CPU6502 &cpu, Bus &bus);
+    void handleZeroPageLDA(CPU6502 &cpu, Bus &bus);
+    void handleTYA(CPU6502 &cpu, Bus &bus);
+    void handleLDXImmediate(CPU6502 &cpu, Bus &bus);
+    void handlePHA(CPU6502 &cpu, Bus &bus);
+    void handleZeroPageSTY(CPU6502 &cpu, Bus &bus);
+    void handleTXS(CPU6502 &cpu, Bus &bus);
+    void handleAND(CPU6502 &cpu, Bus &bus);
+    void handleBEQ(CPU6502 &cpu, Bus &bus);
+    void handleLDAAbsolute(CPU6502 &cpu, Bus &bus);
+    void handleLDA(CPU6502 &cpu, Bus &bus);
+    void handleBPL(CPU6502 &cpu, Bus &bus);
+    void handleISCAbsoluteX(CPU6502 &cpu, Bus &bus);
+    void handleImmLDY(CPU6502 &cpu, Bus &bus);
+    void handleAbsXLDA(CPU6502 &cpu, Bus &bus);
+    void handleImmCMP(CPU6502 &cpu, Bus &bus);
+    void handleRelBCS(CPU6502 &cpu, Bus &bus);
+    void handleBNE(CPU6502 &cpu, Bus &bus);
+    void handleJSR(CPU6502 &cpu, Bus &bus);
+    void handleZeroPageSTA(CPU6502 &cpu, Bus &bus);
+    void handleZeroPageSTX(CPU6502 &cpu, Bus &bus);
+    void handleImmCPX(CPU6502 &cpu, Bus &bus);
+    void handleRelBCC(CPU6502 &cpu, Bus &bus);
+    void handleDEY(CPU6502 &cpu, Bus &bus);
+    void handleImmCPY(CPU6502 &cpu, Bus &bus);
+    void handleRTS(CPU6502 &cpu, Bus &bus);
+    void handleIndirectYSTA(CPU6502 &cpu, Bus &bus);
+    void handleZeroPageBIT(CPU6502 &cpu, Bus &bus);
+    void handleAbsBIT(CPU6502 &cpu, Bus &bus);
+    void handleAbsoluteYSTA(CPU6502 &cpu, Bus &bus);
+    void handleINY(CPU6502 &cpu, Bus &bus);
+    void handleORA(CPU6502 &cpu, Bus &bus);
+    void handleAbsoluteJMP(CPU6502 &cpu, Bus &bus);
+    void handleAbsoluteINC(CPU6502 &cpu, Bus &bus);
+    void handlePLA(CPU6502 &cpu, Bus &bus);
     static std::unordered_map<uint8_t, std::string> opcodeMap;
 
   private:
-    uint8_t fetchImmediate(CPU6502 &cpu);
-    uint8_t fetchZeroPage(CPU6502 &cpu);
-    uint8_t fetchZeroPageX(CPU6502 &cpu);
-    uint8_t fetchZeroPageY(CPU6502 &cpu);
-    uint16_t fetchAbsoluteAddress(CPU6502 &cpu);
-    uint8_t fetchAbsolute(CPU6502 &cpu);
-    uint8_t fetchAbsoluteX(CPU6502 &cpu);
-    uint8_t fetchAbsoluteY(CPU6502 &cpu);
-    uint16_t fetchIndirect(CPU6502 &cpu);
-    uint8_t fetchIndexedIndirectX(CPU6502 &cpu);
-    uint8_t fetchIndirectIndexedY(CPU6502 &cpu);
-    int16_t fetchRelative(CPU6502 &cpu);
-    uint16_t fetchWord(CPU6502 &cpu);
+    uint8_t fetchImmediate(CPU6502 &cpu, Bus &bus);
+    uint8_t fetchZeroPage(CPU6502 &cpu, Bus &bus);
+    uint8_t fetchZeroPageX(CPU6502 &cpu, Bus &bus);
+    uint8_t fetchZeroPageY(CPU6502 &cpu, Bus &bus);
+    uint16_t fetchAbsoluteAddress(CPU6502 &cpu, Bus &bus);
+    uint8_t fetchAbsolute(CPU6502 &cpu, Bus &bus);
+    uint8_t fetchAbsoluteX(CPU6502 &cpu, Bus &bus);
+    uint8_t fetchAbsoluteY(CPU6502 &cpu, Bus &bus);
+    uint16_t fetchIndirect(CPU6502 &cpu, Bus &bus);
+    uint8_t fetchIndexedIndirectX(CPU6502 &cpu, Bus &bus);
+    uint8_t fetchIndirectIndexedY(CPU6502 &cpu, Bus &bus);
+    int16_t fetchRelative(CPU6502 &cpu, Bus &bus);
+    uint16_t fetchWord(CPU6502 &cpu, Bus &bus);
 };
 
 #endif
