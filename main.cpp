@@ -1,73 +1,43 @@
+#include "Bus/Bus.h"
 #include "CPU/CPU6502.h"
-#include "CPU/CPUView.h"
+#include "Cartridge/Cartridge.h"
 #include "JIT/Compiler.h"
-#include "PPU/PPU.h"
-#include "ROM/Loader.h"
-#include "ROM/PRG.hpp"
-#include "ROM/ROM.hpp"
+#include <fstream>
 #include <iostream>
-#include <thread>
+#include <memory>
+#include <vector>
 
-#define JIT_BUFFER_SZ 4096
-#define INIT_ADDRESS 0x8000
-#define KB_16 16384
-#define CHR_8KB 8192
-
-void runCPU(CPU6502 &cpu, JITCompiler &jit, PPU &ppu)
+std::vector<uint8_t> loadROM(const std::string &filename)
 {
-    while (true)
-    {
-        if (cpu.getCycles() == 0)
-        {
-            uint8_t opcode = cpu.readMemory(cpu.getPC());
-            jit.compileOpcode(opcode, cpu);
-        }
+    std::ifstream file(filename, std::ios::binary);
+    if (!file)
+        throw std::runtime_error("Não foi possível abrir a ROM!");
 
-        cpu.clock();
-        ppu.clock(); // Apenas uma chamada por ciclo do CPU
-    }
+    return std::vector<uint8_t>((std::istreambuf_iterator<char>(file)),
+                                std::istreambuf_iterator<char>());
 }
 
-int main(int argc, char *argv[])
+int main()
 {
-    ROMLoader romLoader;
-    ROM rom;
+    auto romData = loadROM("smb.nes");
 
-    if (!romLoader.load(argv[1], rom))
-    {
-        return 1;
-    }
+    auto cart = std::make_shared<Cartridge>(romData);
 
-    const std::vector<uint8_t> &romData = rom.getPRGData();
+    Bus bus;
+    CPU6502 cpu;
+    JITCompiler jit(0x10000);
 
-    PPU ppu(nullptr);
-    CPU6502 cpu(ppu);
-    CPUView cpuView(cpu, ppu);
-
-    ppu.setPGE(&cpuView);
-    ppu.setCHRROM(rom.getCHRData());
-
-    JITCompiler jit(JIT_BUFFER_SZ);
-
-    PRG prg(romData, cpu);
-
-    if (!prg.load())
-    {
-        std::cerr << "[SYSTEM] Failed to load PRG into CPU memory."
-                  << std::endl;
-        return 1;
-    }
+    bus.connectCPU(&cpu);
+    bus.connectCartridge(cart);
+    cpu.connectBus(&bus);
+    jit.connectBus(&bus);
 
     cpu.reset();
 
-    std::thread cpuThread(runCPU, std::ref(cpu), std::ref(jit), std::ref(ppu));
-
-    if (cpuView.Construct(ppu.getWidth(), ppu.getHeight(), 4, 4))
+    while (true)
     {
-        cpuView.Start();
+        cpu.step(jit);
     }
-
-    cpuThread.join();
 
     return 0;
 }

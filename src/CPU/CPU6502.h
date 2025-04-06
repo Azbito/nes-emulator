@@ -1,10 +1,12 @@
 #ifndef CPU6502_H
 #define CPU6502_H
 
-#include "PPU/PPU.h"
+#include "JIT/Compiler.h"
 #include <cstdint>
 #include <cstring>
 #include <iostream>
+
+class Bus;
 
 class CPU6502
 {
@@ -13,7 +15,7 @@ class CPU6502
     uint16_t m_PC;
     uint32_t m_cycles;
     uint8_t m_RAM[65536];
-    PPU *ppu;
+    Bus *bus;
 
   public:
     enum Flags
@@ -28,66 +30,71 @@ class CPU6502
         FLAG_NEGATIVE = 1 << 7
     };
 
-    CPU6502(PPU &ppuRef);
+    CPU6502();
 
-    uint8_t getA() const
+    inline void connectBus(Bus *busPtr)
+    {
+        bus = busPtr;
+    }
+
+    inline uint8_t getA() const
     {
         return m_A;
     }
-    uint8_t getX() const
+    inline uint8_t getX() const
     {
         return m_X;
     }
-    uint8_t getY() const
+    inline uint8_t getY() const
     {
         return m_Y;
     }
-    uint8_t getP() const
+    inline uint8_t getP() const
     {
         return m_P;
     }
-    uint8_t getSP() const
+    inline uint8_t getSP() const
     {
         return m_SP;
     }
-    uint16_t getPC() const
+    inline uint16_t getPC() const
     {
         return m_PC;
     }
-    uint32_t getCycles() const
+    inline uint32_t getCycles() const
     {
         return m_cycles;
     }
-    uint8_t *getRAM()
+    inline uint8_t *getRAM()
     {
         return m_RAM;
     }
 
-    void setA(uint8_t value)
+    inline void setA(uint8_t value)
     {
         m_A = value;
     }
-    void setX(uint8_t value)
+    inline void setX(uint8_t value)
     {
         m_X = value;
     }
-    void setY(uint8_t value)
+    inline void setY(uint8_t value)
     {
         m_Y = value;
     }
-    void setP(uint8_t value)
+    inline void setP(uint8_t value)
     {
         m_P = value;
     }
-    void setSP(uint8_t value)
+    inline void setSP(uint8_t value)
     {
         m_SP = value;
     }
-    void setPC(uint16_t value)
+    inline void setPC(uint16_t value)
     {
         m_PC = value;
     }
-    void setCycles(uint32_t value)
+    inline void setCycles(uint32_t value)
     {
         m_cycles = value;
     }
@@ -107,6 +114,10 @@ class CPU6502
     void setFlag(uint8_t flag, bool value);
     bool getFlag(uint8_t flag);
     bool isFlagSet(uint8_t flag) const;
+
+    void step(JITCompiler &jit);
+
     void reset();
 };
+
 #endif
