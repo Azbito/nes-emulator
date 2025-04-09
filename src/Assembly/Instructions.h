@@ -27,6 +27,12 @@ class Instructions
     void handleDEX(CPU6502 &cpu, Bus &bus);
     void handleCLD(CPU6502 &cpu, Bus &bus);
     void handleTXA(CPU6502 &cpu, Bus &bus);
+    void handleSED(CPU6502 &cpu, Bus &bus);
+    void handleASLAccumulator(CPU6502 &cpu, Bus &bus);
+    void handleDECZeroPageX(CPU6502 &cpu, Bus &bus);
+    void handleSBCZeroPage(CPU6502 &cpu, Bus &bus);
+    void handleTSX(CPU6502 &cpu, Bus &bus);
+    void handleORAZeroPage(CPU6502 &cpu, Bus &bus);
     void handleSTA(CPU6502 &cpu, Bus &bus);
     void handleZeroPageDEC(CPU6502 &cpu, Bus &bus);
     void handleLDXZeroPage(CPU6502 &cpu, Bus &bus);

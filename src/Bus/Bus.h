@@ -6,6 +6,7 @@
 
 class CPU6502;
 class Cartridge;
+class PPU;
 
 class Bus
 {
@@ -13,6 +14,7 @@ class Bus
     Bus();
 
     void connectCPU(CPU6502 *cpu);
+    void connectPPU(PPU *ppu);
     void connectCartridge(std::shared_ptr<Cartridge> cart);
 
     uint8_t read(uint16_t address);
@@ -20,6 +22,7 @@ class Bus
 
   private:
     CPU6502 *cpu;
+    PPU *ppu;
     std::shared_ptr<Cartridge> cartridge;
 
     uint8_t ram[0x0800];

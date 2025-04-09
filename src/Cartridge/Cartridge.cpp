@@ -8,7 +8,10 @@ Cartridge::Cartridge(const std::vector<uint8_t> &romData)
         throw std::runtime_error("ROM muito pequena: faltando cabeçalho");
 
     uint8_t prgRomChunks = romData[4];
+    uint8_t chrRomChunks = romData[5];
+
     size_t prgRomSize = prgRomChunks * 0x4000;
+    size_t chrRomSize = chrRomChunks * 0x2000;
 
     size_t prgStart = 16;
     size_t prgEnd = prgStart + prgRomSize;
@@ -18,6 +21,22 @@ Cartridge::Cartridge(const std::vector<uint8_t> &romData)
 
     prgROM = std::vector<uint8_t>(romData.begin() + prgStart,
                                   romData.begin() + prgEnd);
+
+    if (chrRomSize > 0 && romData.size() >= prgEnd + chrRomSize)
+    {
+        chrROM = std::vector<uint8_t>(romData.begin() + prgEnd,
+                                      romData.begin() + prgEnd + chrRomSize);
+    }
+    else
+    {
+
+        chrROM = std::vector<uint8_t>(0x2000, 0);
+    }
+}
+
+const std::vector<uint8_t> &Cartridge::getCHRROM() const
+{
+    return chrROM;
 }
 
 uint8_t Cartridge::readPRG(uint16_t address)

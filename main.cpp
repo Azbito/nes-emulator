@@ -1,7 +1,12 @@
+#define OLC_PGE_APPLICATION
+
 #include "Bus/Bus.h"
 #include "CPU/CPU6502.h"
 #include "Cartridge/Cartridge.h"
 #include "JIT/Compiler.h"
+#include "Libraries/olcPixelGameEngine.h"
+#include "PPU/PPU.h"
+#include "Screen/GameWindow.hpp"
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -25,19 +30,25 @@ int main()
 
     Bus bus;
     CPU6502 cpu;
+    PPU ppu;
     JITCompiler jit(0x10000);
 
+    ppu.connectCartridge(cart);
+
     bus.connectCPU(&cpu);
+    bus.connectPPU(&ppu);
     bus.connectCartridge(cart);
+
     cpu.connectBus(&bus);
+    ppu.connectBus(&bus);
     jit.connectBus(&bus);
 
     cpu.reset();
 
-    while (true)
-    {
-        cpu.step(jit);
-    }
+    GameWindow window(&ppu, &cpu, &jit);
+
+    if (window.Construct(256, 240, 2, 2))
+        window.Start();
 
     return 0;
 }

@@ -25,7 +25,7 @@ JITCompiler::JITCompiler(size_t bufferSize)
     opcodeTable[0x98] = &Instructions::handleTYA;
     opcodeTable[0xC6] = &Instructions::handleZeroPageDEC;
     opcodeTable[0x68] = &Instructions::handlePLA;
-
+    opcodeTable[0x05] = &Instructions::handleORAZeroPage;
     opcodeTable[0xB1] = &Instructions::handleLDAIndirectIndexedY;
     opcodeTable[0xA6] = &Instructions::handleLDXZeroPage;
     opcodeTable[0x65] = &Instructions::handleADCZeroPage;
@@ -68,6 +68,11 @@ JITCompiler::JITCompiler(size_t bufferSize)
     opcodeTable[0x1] = &Instructions::handleORAIndirectIndexedX;
     opcodeTable[0x4E] = &Instructions::handleLSRAbsolute;
     opcodeTable[0x78] = &Instructions::handleSEI;
+    opcodeTable[0xD6] = &Instructions::handleDECZeroPageX;
+    opcodeTable[0xE5] = &Instructions::handleSBCZeroPage;
+    opcodeTable[0xBA] = &Instructions::handleTSX;
+    opcodeTable[0x0A] = &Instructions::handleASLAccumulator;
+    opcodeTable[0xF8] = &Instructions::handleSED;
     opcodeTable[0xD8] = &Instructions::handleCLD;
     opcodeTable[0x8D] = &Instructions::handleSTA;
     opcodeTable[0xA2] = &Instructions::handleLDXImmediate;

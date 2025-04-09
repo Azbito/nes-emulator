@@ -9,8 +9,10 @@ uint8_t Instructions::fetchImmediate(CPU6502 &cpu, Bus &bus)
 
 uint16_t Instructions::fetchWord(CPU6502 &cpu, Bus &bus)
 {
-    uint8_t lo = bus.read(cpu.getPC() + 1);
-    uint8_t hi = bus.read(cpu.getPC() + 2);
+    uint8_t lo = bus.read(cpu.getPC());
+    uint8_t hi = bus.read(cpu.getPC() + 1);
+    cpu.setPC(cpu.getPC() + 2);
+
     return (hi << 8) | lo;
 }
 
