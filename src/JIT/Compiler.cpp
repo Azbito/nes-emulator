@@ -86,7 +86,6 @@ void JITCompiler::compileOpcode(uint8_t opcode, CPU6502 &cpu)
 {
     if (opcodeTable[opcode])
     {
-        printf(" 0x%02X", opcode);
         (asm_instructions->*opcodeTable[opcode])(cpu, *bus);
     }
     else

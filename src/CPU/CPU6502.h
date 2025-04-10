@@ -99,13 +99,14 @@ class CPU6502
         m_cycles = value;
     }
 
+    void triggerNMI();
+
     void updateZNFlags(uint8_t value);
     void pushToStack(uint8_t value);
     void pushToStack16(uint16_t value);
     uint8_t popStack();
 
     bool isNegativeFlagClean();
-    void clock();
 
     void writeMemory(uint16_t address, uint8_t value);
     uint8_t readMemory(uint16_t address);
@@ -116,6 +117,7 @@ class CPU6502
     bool isFlagSet(uint8_t flag) const;
 
     void step(JITCompiler &jit);
+    void clock(JITCompiler &jit);
 
     void reset();
 };

@@ -59,7 +59,7 @@ void Instructions::handleBPL(CPU6502 &cpu, Bus &bus)
 
     if (!cpu.getFlag(cpu.FLAG_NEGATIVE))
     {
-        uint16_t newPC = cpu.getPC() + 2 + offset;
+        uint16_t newPC = cpu.getPC() + 2 + static_cast<int16_t>(offset);
         cpu.setCycles(cpu.getCycles() + 1);
         cpu.setPC(newPC);
         return;

@@ -10,6 +10,12 @@ Cartridge::Cartridge(const std::vector<uint8_t> &romData)
     uint8_t prgRomChunks = romData[4];
     uint8_t chrRomChunks = romData[5];
 
+    uint8_t flags6 = romData[6];
+    bool verticalMirroring = false;
+
+    mirroring =
+        verticalMirroring ? MirrorType::VERTICAL : MirrorType::HORIZONTAL;
+
     size_t prgRomSize = prgRomChunks * 0x4000;
     size_t chrRomSize = chrRomChunks * 0x2000;
 
@@ -32,6 +38,11 @@ Cartridge::Cartridge(const std::vector<uint8_t> &romData)
 
         chrROM = std::vector<uint8_t>(0x2000, 0);
     }
+}
+
+MirrorType Cartridge::getMirrorType() const
+{
+    return mirroring;
 }
 
 const std::vector<uint8_t> &Cartridge::getCHRROM() const

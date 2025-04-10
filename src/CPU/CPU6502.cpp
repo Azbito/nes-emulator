@@ -31,6 +31,24 @@ bool CPU6502::getFlag(uint8_t flag)
     return (m_P & flag) != 0;
 }
 
+void CPU6502::triggerNMI()
+{
+    bus->write(0x0100 + m_SP--, (m_PC >> 8) & 0xFF);
+    bus->write(0x0100 + m_SP--, m_PC & 0xFF);
+
+    setFlag(FLAG_BREAK, false);
+    setFlag(FLAG_UNKNOW, true);
+    bus->write(0x0100 + m_SP--, m_P);
+
+    setFlag(FLAG_INTERRUPT, true);
+
+    uint16_t lo = bus->read(0xFFFA);
+    uint16_t hi = bus->read(0xFFFB);
+    m_PC = (hi << 8) | lo;
+
+    m_cycles = 7;
+}
+
 void CPU6502::updateZNFlags(uint8_t value)
 {
     setFlag(FLAG_ZERO, value == 0);
@@ -63,8 +81,14 @@ void CPU6502::writeMemory(uint16_t address, uint8_t value)
     m_RAM[address] = value;
 }
 
-void CPU6502::clock()
+void CPU6502::clock(JITCompiler &jit)
 {
+    if (m_cycles == 0)
+    {
+        uint8_t opcode = bus->read(m_PC);
+        jit.compileOpcode(opcode, *this);
+    }
+
     m_cycles--;
 }
 

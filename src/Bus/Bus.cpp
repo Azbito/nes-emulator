@@ -34,7 +34,15 @@ uint8_t Bus::read(uint16_t address)
         return cartridge->readPRG(address);
 
     if (address == 0x2002)
-        return ppu->readStatus();
+    {
+        uint8_t status = ppu->readStatus();
+        return status;
+    }
+
+    if (address == 0x2007)
+    {
+        return ppu->readData();
+    }
 
     return 0x00;
 }
@@ -42,7 +50,11 @@ uint8_t Bus::read(uint16_t address)
 void Bus::write(uint16_t address, uint8_t value)
 {
     if (address >= 0x8000 && cartridge)
+        return;
+
+    if (address == 0x2000)
     {
+        ppu->writeControl(value);
         return;
     }
 
@@ -64,6 +76,15 @@ void Bus::write(uint16_t address, uint8_t value)
         return;
     }
 
-    printf("ADDR WR: $%04X\n", address);
-    system("pause");
+    if (address == 0x2006)
+    {
+        ppu->writeAddress(value);
+        return;
+    }
+
+    if (address == 0x2007)
+    {
+        ppu->writeData(value);
+        return;
+    }
 }
