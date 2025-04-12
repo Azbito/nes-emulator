@@ -29,6 +29,7 @@ class Instructions
     void handleASLAbsoluteX(CPU6502 &cpu, Bus &bus);
     void handleNOPIMM(CPU6502 &cpu, Bus &bus);
     void handleZeroPageLDA(CPU6502 &cpu, Bus &bus);
+    void handleImmediateLDX(CPU6502 &cpu, Bus &bus);
     void handleEORZP(CPU6502 &cpu, Bus &bus);
     void handleSREIndirectIndexed(CPU6502 &cpu, Bus &bus);
     void handleORAIndirectIndexedX(CPU6502 &cpu, Bus &bus);

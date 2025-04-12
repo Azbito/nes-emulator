@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++17 -I./src
+CXXFLAGS = -std=c++17 -I./src -I.
 LDFLAGS = -luser32 -lgdi32 -lopengl32 -lgdiplus -lShlwapi -ldwmapi
 SRC_DIR = ./src
 TARGET = emulator.exe
@@ -14,6 +14,8 @@ $(TARGET): $(OBJECTS)
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+.PHONY: clean
 
 clean:
 	rm -f $(OBJECTS) $(TARGET)

@@ -1,5 +1,6 @@
 #define OLC_PGE_APPLICATION
 
+#include "config.h"
 #include "Bus/Bus.h"
 #include "CPU/CPU6502.h"
 #include "Cartridge/Cartridge.h"

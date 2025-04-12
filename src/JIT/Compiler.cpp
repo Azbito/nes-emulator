@@ -13,6 +13,7 @@ JITCompiler::JITCompiler(size_t bufferSize)
 {
     asm_instructions = new Instructions();
     opcodeTable[0xBE] = &Instructions::handleLDXIndirectY;
+    opcodeTable[0x2A] = &Instructions::handleImmediateLDX;
     opcodeTable[0xAE] = &Instructions::handleLDXAbsolute;
     opcodeTable[0x24] = &Instructions::handleZeroPageBIT;
     opcodeTable[0x09] = &Instructions::handleORA;
@@ -93,6 +94,8 @@ void JITCompiler::compileOpcode(uint8_t opcode, CPU6502 &cpu)
 {
     if (opcodeTable[opcode])
     {
+      printf(" 0x%02X", opcode);
+
         (asm_instructions->*opcodeTable[opcode])(cpu, *bus);
     }
     else

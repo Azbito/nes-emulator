@@ -1,11 +1,13 @@
 #pragma once
 
 #include "Cartridge/Cartridge.h"
+#include "config.h"
 #include "Libraries/olcPixelGameEngine.h"
 #include "PPU/MirrorType.h"
 #include <array>
 #include <cstdint>
 #include <memory>
+
 
 class Bus;
 class Cartridge;
@@ -42,6 +44,7 @@ class PPU
     void renderBackground();
 
     uint8_t getMask() const;
+    int getCycles();
 
     bool showBackground() const;
     bool renderSprites() const;
@@ -61,6 +64,7 @@ class PPU
   private:
     std::shared_ptr<Cartridge> cartridge;
     Bus *bus = nullptr;
+    olc::PixelGameEngine* pge;
 
     std::array<olc::Pixel, 256 * 240> framebuffer;
 

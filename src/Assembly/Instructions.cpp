@@ -224,6 +224,17 @@ void Instructions::handleAbsoluteYSTA(CPU6502 &cpu, Bus &bus)
     cpu.setPC(cpu.getPC() + 3);
 }
 
+void Instructions::handleImmediateLDX(CPU6502 &cpu, Bus &bus)
+{
+    uint8_t value = bus.read(cpu.getPC() + 1);
+    cpu.setX(value);
+    cpu.updateZNFlags(value);
+
+    cpu.setCycles(cpu.getCycles() + 2);
+    cpu.setPC(cpu.getPC() + 2);
+}
+
+
 void Instructions::handleAbsoluteINC(CPU6502 &cpu, Bus &bus)
 {
     uint8_t value = fetchAbsolute(cpu, bus);
@@ -580,30 +591,17 @@ void Instructions::handleZeroPageSTY(CPU6502 &cpu, Bus &bus)
     cpu.setPC(cpu.getPC() + 2);
 }
 
-void Instructions::handleRelativeBEQ(CPU6502 &cpu, Bus &bus)
-{
+void Instructions::handleRelativeBEQ(CPU6502 &cpu, Bus &bus) {
     int8_t offset = static_cast<int8_t>(bus.read(cpu.getPC() + 1));
-    uint16_t pc = cpu.getPC() + 2;
+    uint16_t newPC = cpu.getPC() + 2;
 
+    if (cpu.isFlagSet(cpu.FLAG_ZERO)) {
+        newPC += offset;
+        cpu.setCycles(cpu.getCycles() + ((newPC & 0xFF00) != (cpu.getPC() & 0xFF00) ? 2 : 1));
+    }
+
+    cpu.setPC(newPC);
     cpu.setCycles(cpu.getCycles() + 2);
-
-    if (cpu.isFlagSet(cpu.FLAG_ZERO))
-    {
-        if ((pc & 0xFF00) != ((pc + offset) & 0xFF00))
-        {
-            cpu.setCycles(cpu.getCycles() + 2);
-        }
-        else
-        {
-            cpu.setCycles(cpu.getCycles() + 1);
-        }
-
-        cpu.setPC(pc + offset);
-    }
-    else
-    {
-        cpu.setPC(pc);
-    }
 }
 
 void Instructions::handleORA(CPU6502 &cpu, Bus &bus)

@@ -75,8 +75,17 @@ void PPU::drawTile(const std::vector<uint8_t> &chr, uint8_t tileIndex,
                    int screenX, int screenY,
                    std::array<olc::Pixel, 256 * 240> &framebuffer)
 {
+    std::cout << "oi" << std::endl;
+    std::cout << SHOW_ONLY_TILES_ID << std::endl;
     int baseAddr = tileIndex * 16;
 
+#if SHOW_ONLY_TILES_ID
+    int centerX = screenX + 4;
+    int centerY = screenY + 4;
+    printf("oiii");
+    std::string text = std::to_string(tileIndex);
+    pge->DrawStringDecal({(float)centerX, (float)centerY}, text, olc::WHITE);
+#else
     for (int row = 0; row < 8; row++)
     {
         uint8_t plane0 = chr[baseAddr + row];
@@ -101,6 +110,7 @@ void PPU::drawTile(const std::vector<uint8_t> &chr, uint8_t tileIndex,
             }
         }
     }
+#endif
 }
 
 olc::Pixel PPU::getColorFromPalette(uint8_t paletteIndex)
@@ -289,6 +299,11 @@ bool PPU::isFrameComplete()
 void PPU::resetFrameFlag()
 {
     m_frameComplete = false;
+}
+
+int PPU::getCycles()
+{
+    return m_cycles;
 }
 
 void PPU::clock()

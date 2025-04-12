@@ -4,6 +4,7 @@
 #include "Bus/Bus.h"
 #include "CPU/CPU6502.h"
 #include "JIT/Compiler.h"
+#include "config.h"
 #include "Libraries/olcPixelGameEngine.h"
 #include "PPU/PPU.h"
 #include <bitset>
@@ -28,20 +29,16 @@ class GameWindow : public olc::PixelGameEngine
 
     bool OnUserUpdate(float fElapsedTime) override
     {
-        Clear(olc::Pixel(20, 20, 50));
-
+#if DEBUG_MODE
         if (GetKey(olc::Key::P).bPressed)
             isPaused = !isPaused;
 
         if (GetKey(olc::Key::S).bPressed && isPaused)
         {
             isStepping = true;
+             printf("OPCODE: %02X\n", bus->read(cpu->getPC()));
         }
 
-        if (GetKey(olc::Key::O).bPressed)
-        {
-           printf("OPCODE: %02X\n", bus->read(cpu->getPC()));
-        }
 
         if (isPaused && isStepping)
         {
@@ -54,6 +51,9 @@ class GameWindow : public olc::PixelGameEngine
         {
             RunEmulationFrame();
         }
+#else
+        RunEmulationFrame();
+#endif
 
         DrawScreen();
         return true;
@@ -94,19 +94,18 @@ class GameWindow : public olc::PixelGameEngine
     void RunEmulationFrame()
     {
         const int totalPPUCyclesPerFrame = 341 * 262;
-        int ppuCycles = 0;
 
-        while (ppuCycles < totalPPUCyclesPerFrame)
+        while (ppu->getCycles() < totalPPUCyclesPerFrame)
         {
             ppu->clock();
-            ppuCycles++;
 
-            if (ppuCycles % 3 == 0)
+            if (ppu->getCycles() % 3 == 0)
             {
                 if (cpu->getCycles() == 0)
                 {
                     cpu->step(*jit);
                 }
+
                 cpu->clock(*jit);
             }
 
@@ -121,11 +120,33 @@ class GameWindow : public olc::PixelGameEngine
     void DrawScreen()
     {
         constexpr int ppuWidth = 256;
+
+#if SHOW_INSTRUCTIONS
+        Clear(olc::Pixel(20, 20, 50));
+
         FillRect(ppuWidth, 0, ScreenWidth() - ppuWidth, ScreenHeight(),
                  olc::DARK_BLUE);
         DrawRect(ppuWidth - 1, 0, ScreenWidth() - ppuWidth + 2, ScreenHeight(),
                  olc::WHITE);
+
         DrawDebugInfo(ppuWidth - 125, 10);
+#else
+        if (ppu->isFrameComplete())
+        {
+            ppu->renderFrame();
+
+            const std::array<olc::Pixel, 256 * 240> &frame =
+                ppu->getFrameBuffer();
+            for (int y = 0; y < 240; ++y)
+            {
+                for (int x = 0; x < 256; ++x)
+                {
+                    olc::Pixel color = frame[y * 256 + x];
+                    Draw(x, y, color);
+                }
+            }
+        }
+#endif
     }
 
     void DrawDebugInfo(int x, int y)
