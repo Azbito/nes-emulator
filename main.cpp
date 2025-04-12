@@ -24,7 +24,7 @@ std::vector<uint8_t> loadROM(const std::string &filename)
 
 int main()
 {
-    auto romData = loadROM("smb.nes");
+    auto romData = loadROM("dk.nes");
 
     auto cart = std::make_shared<Cartridge>(romData);
 
@@ -45,7 +45,7 @@ int main()
 
     cpu.reset();
 
-    GameWindow window(&ppu, &cpu, &jit);
+    GameWindow window(&ppu, &cpu, &jit, &bus);
 
     if (window.Construct(256, 240, 2, 2))
         window.Start();

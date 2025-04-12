@@ -50,8 +50,18 @@ std::unordered_map<uint8_t, std::string> Instructions::opcodeMap = {
     {0x98, "TYA"},
 
     {0x00, "BRK"}, {0xEA, "NOP"}, {0x24, "BIT"}, {0x2C, "BIT"},
-
 };
+
+std::string Instructions::getOpcodeName(uint8_t opcode)
+{
+    auto it = opcodeMap.find(opcode);
+    if (it != opcodeMap.end())
+    {
+        return it->second;
+    }
+
+    return "Unknown";
+}
 
 void Instructions::handleBPL(CPU6502 &cpu, Bus &bus)
 {
@@ -98,19 +108,18 @@ void Instructions::handleDEX(CPU6502 &cpu, Bus &bus)
 
 void Instructions::handleBNE(CPU6502 &cpu, Bus &bus)
 {
-    int16_t targetAddr = fetchRelative(cpu, bus);
+    int8_t offset = fetchRelative(cpu, bus);
 
     if (!cpu.isFlagSet(cpu.FLAG_ZERO))
     {
         cpu.setCycles(cpu.getCycles() + 1);
-        cpu.setPC(targetAddr);
+        cpu.setPC(cpu.getPC() + offset);
         return;
     }
 
     cpu.setCycles(cpu.getCycles() + 2);
     cpu.setPC(cpu.getPC() + 2);
 }
-
 void Instructions::handleZeroPageSTA(CPU6502 &cpu, Bus &bus)
 {
     uint8_t address = fetchZeroPage(cpu, bus);
@@ -225,9 +234,76 @@ void Instructions::handleAbsoluteINC(CPU6502 &cpu, Bus &bus)
     cpu.setPC(cpu.getPC() + 3);
 }
 
+void Instructions::handleSTAAbsolute(CPU6502 &cpu, Bus &bus)
+{
+    uint16_t pc = cpu.getPC();
+    uint8_t low = bus.read(pc + 1);
+    uint8_t high = bus.read(pc + 2);
+
+    uint16_t address = (high << 8) | low;
+
+    bus.write(address, cpu.getA());
+
+    cpu.setPC(cpu.getPC() + 3);
+    cpu.setCycles(cpu.getCycles() + 4);
+}
+
+void Instructions::handleSEP(CPU6502 &cpu, Bus &bus)
+{
+    uint16_t pc = cpu.getPC();
+    uint8_t data = bus.read(pc + 1);
+
+    cpu.setStatus(cpu.getP() | data);
+
+    cpu.setCycles(cpu.getCycles() + 2);
+
+    cpu.setPC(pc + 2);
+}
+
+void Instructions::handleDECAbsolute(CPU6502 &cpu, Bus &bus)
+{
+    uint16_t pc = cpu.getPC();
+    uint8_t low = bus.read(pc + 1);
+    uint8_t high = bus.read(pc + 2);
+
+    uint16_t address = (high << 8) | low;
+
+    uint8_t value = bus.read(address);
+
+    value--;
+
+    bus.write(address, value);
+
+    cpu.setCycles(cpu.getCycles() + 6);
+
+    cpu.setPC(pc + 3);
+}
+
+void Instructions::handleAbsoluteJMPIndirect(CPU6502 &cpu, Bus &bus)
+{
+    uint16_t pc = cpu.getPC();
+    uint8_t low = bus.read(pc + 1);
+    uint8_t high = bus.read(pc + 2);
+
+    uint16_t pointer = (high << 8) | low;
+
+    uint8_t lowDest = bus.read(pointer);
+    uint8_t highDest = bus.read(pointer + 1);
+
+    uint16_t address = (highDest << 8) | lowDest;
+
+    cpu.setPC(address);
+    cpu.setCycles(cpu.getCycles() + 5);
+}
+
 void Instructions::handleAbsoluteJMP(CPU6502 &cpu, Bus &bus)
 {
-    uint16_t address = fetchWord(cpu, bus);
+    uint16_t pc = cpu.getPC();
+    uint8_t low = bus.read(pc + 1);
+    uint8_t high = bus.read(pc + 2);
+
+    uint16_t address = (high << 8) | low;
+
     cpu.setPC(address);
     cpu.setCycles(cpu.getCycles() + 3);
 }
@@ -504,26 +580,30 @@ void Instructions::handleZeroPageSTY(CPU6502 &cpu, Bus &bus)
     cpu.setPC(cpu.getPC() + 2);
 }
 
-void Instructions::handleBEQ(CPU6502 &cpu, Bus &bus)
+void Instructions::handleRelativeBEQ(CPU6502 &cpu, Bus &bus)
 {
-    int16_t offset = fetchRelative(cpu, bus);
+    int8_t offset = static_cast<int8_t>(bus.read(cpu.getPC() + 1));
+    uint16_t pc = cpu.getPC() + 2;
+
+    cpu.setCycles(cpu.getCycles() + 2);
 
     if (cpu.isFlagSet(cpu.FLAG_ZERO))
     {
-        cpu.setPC(cpu.getPC() + 2 + offset);
-
-        if (((cpu.getPC() & 0xFF00) != ((cpu.getPC() + offset) & 0xFF00)))
+        if ((pc & 0xFF00) != ((pc + offset) & 0xFF00))
+        {
+            cpu.setCycles(cpu.getCycles() + 2);
+        }
+        else
         {
             cpu.setCycles(cpu.getCycles() + 1);
         }
+
+        cpu.setPC(pc + offset);
     }
     else
     {
-
-        cpu.setPC(cpu.getPC() + 2);
+        cpu.setPC(pc);
     }
-
-    cpu.setCycles(cpu.getCycles() + 2);
 }
 
 void Instructions::handleORA(CPU6502 &cpu, Bus &bus)
@@ -559,6 +639,24 @@ void Instructions::handleZeroPageBIT(CPU6502 &cpu, Bus &bus)
     cpu.setPC(cpu.getPC() + 2);
 }
 
+void Instructions::handleLDYAbsoluteX(CPU6502 &cpu, Bus &bus)
+{
+    uint16_t address = fetchAbsoluteAddress(cpu, bus);
+    uint8_t value = bus.read(address + cpu.getX());
+    cpu.setY(value);
+    cpu.updateZNFlags(cpu.getY());
+    cpu.setCycles(cpu.getCycles() + 4);
+    cpu.setPC(cpu.getPC() + 3);
+}
+
+void Instructions::handleZeroPageXSTA(CPU6502 &cpu, Bus &bus)
+{
+    uint16_t addr = fetchZeroPageX(cpu, bus);
+    bus.write(addr, cpu.getA());
+    cpu.setCycles(cpu.getCycles() + 3);
+    cpu.setPC(cpu.getPC() + 2);
+}
+
 void Instructions::handleJSR(CPU6502 &cpu, Bus &bus)
 {
     uint16_t targetAddr = fetchAbsoluteAddress(cpu, bus);
@@ -569,6 +667,21 @@ void Instructions::handleJSR(CPU6502 &cpu, Bus &bus)
 
     cpu.setPC(targetAddr);
     cpu.setCycles(cpu.getCycles() + 6);
+}
+
+void Instructions::handleAbsCMP(CPU6502 &cpu, Bus &bus)
+{
+    uint16_t address = fetchAbsolute(cpu, bus);
+    uint8_t value = bus.read(address);
+
+    uint8_t result = cpu.getA() - value;
+
+    cpu.setFlag(cpu.FLAG_CARRY, cpu.getA() >= value);
+    cpu.setFlag(cpu.FLAG_ZERO, result == 0);
+    cpu.setFlag(cpu.FLAG_NEGATIVE, result & 0x80);
+
+    cpu.setCycles(cpu.getCycles() + 4);
+    cpu.setPC(cpu.getPC() + 3);
 }
 
 void Instructions::handleImmCMP(CPU6502 &cpu, Bus &bus)
@@ -687,6 +800,29 @@ void Instructions::handleNOPIMM(CPU6502 &cpu, Bus &bus)
     fetchImmediate(cpu, bus);
     cpu.setCycles(cpu.getCycles() + 2);
     cpu.setPC(cpu.getPC() + 2);
+}
+
+void Instructions::handleLDXIndirectY(CPU6502 &cpu, Bus &bus)
+{
+
+    uint8_t value = fetchIndirectIndexedY(cpu, bus);
+
+    cpu.setX(value);
+    cpu.updateZNFlags(cpu.getX());
+    cpu.setCycles(cpu.getCycles() + 5);
+    cpu.setPC(cpu.getPC() + 2);
+}
+
+void Instructions::handleLDXAbsolute(CPU6502 &cpu, Bus &bus)
+{
+
+    uint16_t address = fetchAbsoluteAddress(cpu, bus);
+    uint8_t value = bus.read(address);
+
+    cpu.setX(value);
+    cpu.updateZNFlags(cpu.getX());
+    cpu.setCycles(cpu.getCycles() + 4);
+    cpu.setPC(cpu.getPC() + 3);
 }
 
 void Instructions::handleNOPAbsoluteX(CPU6502 &cpu, Bus &bus)

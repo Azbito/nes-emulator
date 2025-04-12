@@ -177,8 +177,6 @@ void PPU::writeData(uint8_t value)
         uint16_t mirrorAddr = mirrorAddress(m_VRAMAddress);
         if (mirrorAddr != 0xFFFF)
         {
-            printf("m_VRAMAddress: $%04X | VALUE: 0x%02X\n", m_VRAMAddress,
-                   value);
             m_VRAM[mirrorAddr] = value;
         }
     }

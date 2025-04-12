@@ -1,4 +1,3 @@
-
 #include "JIT/Compiler.h"
 #include "Assembly/Instructions.h"
 
@@ -13,12 +12,15 @@ JITCompiler::~JITCompiler()
 JITCompiler::JITCompiler(size_t bufferSize)
 {
     asm_instructions = new Instructions();
-
+    opcodeTable[0xBE] = &Instructions::handleLDXIndirectY;
+    opcodeTable[0xAE] = &Instructions::handleLDXAbsolute;
     opcodeTable[0x24] = &Instructions::handleZeroPageBIT;
     opcodeTable[0x09] = &Instructions::handleORA;
     opcodeTable[0x99] = &Instructions::handleAbsoluteYSTA;
     opcodeTable[0x4C] = &Instructions::handleAbsoluteJMP;
     opcodeTable[0xEE] = &Instructions::handleAbsoluteINC;
+    opcodeTable[0xAC] = &Instructions::handleLDYAbsoluteX;
+    opcodeTable[0x95] = &Instructions::handleZeroPageXSTA;
     opcodeTable[0x29] = &Instructions::handleAND;
     opcodeTable[0xA5] = &Instructions::handleZeroPageLDA;
     opcodeTable[0x48] = &Instructions::handlePHA;
@@ -35,7 +37,7 @@ JITCompiler::JITCompiler(size_t bufferSize)
     opcodeTable[0x25] = &Instructions::handleZeroPageAND;
     opcodeTable[0x84] = &Instructions::handleZeroPageSTY;
     opcodeTable[0x8A] = &Instructions::handleTXA;
-    opcodeTable[0xF0] = &Instructions::handleBEQ;
+    opcodeTable[0xF0] = &Instructions::handleRelativeBEQ;
     opcodeTable[0xC8] = &Instructions::handleINY;
     opcodeTable[0x2C] = &Instructions::handleAbsBIT;
     opcodeTable[0x60] = &Instructions::handleRTS;
@@ -47,6 +49,7 @@ JITCompiler::JITCompiler(size_t bufferSize)
     opcodeTable[0x86] = &Instructions::handleZeroPageSTX;
     opcodeTable[0x85] = &Instructions::handleZeroPageSTA;
     opcodeTable[0x20] = &Instructions::handleJSR;
+    opcodeTable[0xB5] = &Instructions::handleZeroPageLDA;
     opcodeTable[0xD0] = &Instructions::handleBNE;
     opcodeTable[0xC9] = &Instructions::handleImmCMP;
     opcodeTable[0xB0] = &Instructions::handleRelBCS;
@@ -70,7 +73,11 @@ JITCompiler::JITCompiler(size_t bufferSize)
     opcodeTable[0x78] = &Instructions::handleSEI;
     opcodeTable[0xD6] = &Instructions::handleDECZeroPageX;
     opcodeTable[0xE5] = &Instructions::handleSBCZeroPage;
+    opcodeTable[0x8E] = &Instructions::handleSTAAbsolute;
     opcodeTable[0xBA] = &Instructions::handleTSX;
+    opcodeTable[0xD2] = &Instructions::handleSEP;
+    opcodeTable[0xCE] = &Instructions::handleDECAbsolute;
+    opcodeTable[0xCD] = &Instructions::handleAbsCMP;
     opcodeTable[0x0A] = &Instructions::handleASLAccumulator;
     opcodeTable[0xF8] = &Instructions::handleSED;
     opcodeTable[0xD8] = &Instructions::handleCLD;

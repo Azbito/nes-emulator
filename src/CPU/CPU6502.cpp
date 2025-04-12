@@ -16,9 +16,10 @@ void CPU6502::reset()
 {
     uint16_t low = bus->read(0xFFFC);
     uint16_t high = bus->read(0xFFFD);
+    uint16_t startPC = (high << 8) | low;
 
-    setPC((high << 8) | low);
-
+    setPC(startPC);
+    printf("Reset vector: $%04X -> $%04X\n", 0xFFFC, startPC);
     setA(0);
     setX(0);
     setY(0);

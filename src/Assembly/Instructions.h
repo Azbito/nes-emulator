@@ -11,13 +11,24 @@ class Bus;
 class Instructions
 {
   public:
+    std::string getOpcodeName(uint8_t opcode);
+
+    void handleSEP(CPU6502 &cpu, Bus &bus);
+    void handleSTAAbsolute(CPU6502 &cpu, Bus &bus);
+    void handleDECAbsolute(CPU6502 &cpu, Bus &bus);
+    void handleAbsoluteJMPIndirect(CPU6502 &cpu, Bus &bus);
     void handleADC(CPU6502 &cpu, Bus &bus);
+    void handleZeroPageXSTA(CPU6502 &cpu, Bus &bus);
     void handleBRK(CPU6502 &cpu, Bus &bus);
     void handleORAAbsoluteY(CPU6502 &cpu, Bus &bus);
+    void handleLDXAbsolute(CPU6502 &cpu, Bus &bus);
     void handleNOP(CPU6502 &cpu, Bus &bus);
     void handleNOPAbsoluteX(CPU6502 &cpu, Bus &bus);
+    void handleLDXIndirectY(CPU6502 &cpu, Bus &bus);
+    void handleLDYAbsoluteX(CPU6502 &cpu, Bus &bus);
     void handleASLAbsoluteX(CPU6502 &cpu, Bus &bus);
     void handleNOPIMM(CPU6502 &cpu, Bus &bus);
+    void handleZeroPageLDA(CPU6502 &cpu, Bus &bus);
     void handleEORZP(CPU6502 &cpu, Bus &bus);
     void handleSREIndirectIndexed(CPU6502 &cpu, Bus &bus);
     void handleORAIndirectIndexedX(CPU6502 &cpu, Bus &bus);
@@ -27,6 +38,7 @@ class Instructions
     void handleDEX(CPU6502 &cpu, Bus &bus);
     void handleCLD(CPU6502 &cpu, Bus &bus);
     void handleTXA(CPU6502 &cpu, Bus &bus);
+    void handleAbsCMP(CPU6502 &cpu, Bus &bus);
     void handleSED(CPU6502 &cpu, Bus &bus);
     void handleASLAccumulator(CPU6502 &cpu, Bus &bus);
     void handleDECZeroPageX(CPU6502 &cpu, Bus &bus);
@@ -42,14 +54,13 @@ class Instructions
     void handleADCZeroPage(CPU6502 &cpu, Bus &bus);
     void handleLSRA(CPU6502 &cpu, Bus &bus);
     void handleZeroPageAND(CPU6502 &cpu, Bus &bus);
-    void handleZeroPageLDA(CPU6502 &cpu, Bus &bus);
     void handleTYA(CPU6502 &cpu, Bus &bus);
     void handleLDXImmediate(CPU6502 &cpu, Bus &bus);
     void handlePHA(CPU6502 &cpu, Bus &bus);
     void handleZeroPageSTY(CPU6502 &cpu, Bus &bus);
     void handleTXS(CPU6502 &cpu, Bus &bus);
     void handleAND(CPU6502 &cpu, Bus &bus);
-    void handleBEQ(CPU6502 &cpu, Bus &bus);
+    void handleRelativeBEQ(CPU6502 &cpu, Bus &bus);
     void handleLDAAbsolute(CPU6502 &cpu, Bus &bus);
     void handleLDA(CPU6502 &cpu, Bus &bus);
     void handleBPL(CPU6502 &cpu, Bus &bus);

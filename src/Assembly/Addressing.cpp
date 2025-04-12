@@ -9,11 +9,15 @@ uint8_t Instructions::fetchImmediate(CPU6502 &cpu, Bus &bus)
 
 uint16_t Instructions::fetchWord(CPU6502 &cpu, Bus &bus)
 {
-    uint8_t lo = bus.read(cpu.getPC());
-    uint8_t hi = bus.read(cpu.getPC() + 1);
-    cpu.setPC(cpu.getPC() + 2);
+    uint16_t pc = cpu.getPC();
+    uint8_t lo = bus.read(pc);
+    uint8_t hi = bus.read(pc + 1);
 
-    return (hi << 8) | lo;
+    cpu.setPC(pc + 2);
+
+    uint16_t address = (hi << 8) | lo;
+
+    return address;
 }
 
 uint8_t Instructions::fetchZeroPage(CPU6502 &cpu, Bus &bus)
