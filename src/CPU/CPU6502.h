@@ -7,7 +7,6 @@
 
 #include "JIT/Compiler.h"
 
-
 class Bus;
 
 class CPU6502 {
@@ -16,6 +15,7 @@ private:
     uint16_t m_PC;
     uint32_t m_cycles;
     uint8_t m_RAM[65536];
+
     Bus *bus;
 
 public:

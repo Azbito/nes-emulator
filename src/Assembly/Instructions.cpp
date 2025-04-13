@@ -64,17 +64,22 @@ std::string Instructions::getOpcodeName(uint8_t opcode) {
 }
 
 void Instructions::handleBPL(CPU6502 &cpu, Bus &bus) {
-    int8_t offset = bus.read(cpu.getPC() + 1);
+    int8_t offset = static_cast<int8_t>(bus.read(cpu.getPC() + 1));
+    uint16_t pc = cpu.getPC();
+    cpu.setPC(pc + 2);
 
     if (!cpu.getFlag(cpu.FLAG_NEGATIVE)) {
-        uint16_t newPC = cpu.getPC() + 2 + static_cast<int16_t>(offset);
+        uint16_t target = pc + 2 + offset;
         cpu.setCycles(cpu.getCycles() + 1);
-        cpu.setPC(newPC);
-        return;
+
+        if ((target & 0xFF00) != ((pc + 2) & 0xFF00)) {
+            cpu.setCycles(cpu.getCycles() + 1);
+        }
+
+        cpu.setPC(target);
     }
 
     cpu.setCycles(cpu.getCycles() + 2);
-    cpu.setPC(cpu.getPC() + 2);
 }
 
 void Instructions::handleAbsXLDA(CPU6502 &cpu, Bus &bus) {
@@ -810,6 +815,7 @@ void Instructions::handleLDAAbsolute(CPU6502 &cpu, Bus &bus) {
     uint16_t address = fetchAbsoluteAddress(cpu, bus);
     uint8_t value = bus.read(address);
     cpu.setA(value);
+    printf("%02X - $%04X\n", cpu.getA(), address);
     cpu.updateZNFlags(cpu.getA());
     cpu.setCycles(cpu.getCycles() + 4);
     cpu.setPC(cpu.getPC() + 3);

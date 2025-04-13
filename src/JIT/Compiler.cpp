@@ -96,10 +96,8 @@ JITCompiler::JITCompiler(size_t bufferSize) {
 }
 
 void JITCompiler::compileOpcode(uint8_t opcode, CPU6502 &cpu) {
-    printf("OPCODE: %02X | $%04X\n", opcode, cpu.getPC());
     if (opcodeTable[opcode]) {
         (asm_instructions->*opcodeTable[opcode])(cpu, *bus);
-
         return;
     }
 
