@@ -81,24 +81,6 @@ class GameWindow : public olc::PixelGameEngine
             ppu->clock();
             ppu->clock();
 
-            cpu->clock(*jit);
-
-            if (ppu->nmiTriggered())
-            {
-                cpu->triggerNMI();
-                ppu->clearNmiFlag();
-            }
-        } while (cpu->getCycles() > 0);
-    }
-
-    void RunEmulationFrame()
-    {
-        const int totalPPUCyclesPerFrame = 341 * 262;
-
-        while (ppu->getCycles() < totalPPUCyclesPerFrame)
-        {
-            ppu->clock();
-
             if (ppu->getCycles() % 3 == 0)
             {
                 if (cpu->getCycles() == 0)
@@ -114,8 +96,27 @@ class GameWindow : public olc::PixelGameEngine
                 cpu->triggerNMI();
                 ppu->clearNmiFlag();
             }
+        } while (cpu->getCycles() > 0);
+    }
+
+    void RunEmulationFrame()
+{
+    const int totalPPUCyclesPerFrame = 341 * 262;
+    while (ppu->getCycles() < totalPPUCyclesPerFrame)
+    {
+        ppu->clock();
+
+        if (ppu->getCycles() % 3 == 0)
+        {
+            if (cpu->getCycles() == 0)
+            {
+                cpu->step(*jit);
+            }
+
+            cpu->clock(*jit);
         }
     }
+}
 
     void DrawScreen()
     {
