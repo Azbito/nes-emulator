@@ -8,9 +8,8 @@ class CPU6502;
 class Cartridge;
 class PPU;
 
-class Bus
-{
-  public:
+class Bus {
+public:
     Bus();
 
     void connectCPU(CPU6502 *cpu);
@@ -20,7 +19,7 @@ class Bus
     uint8_t read(uint16_t address);
     void write(uint16_t address, uint8_t value);
 
-  private:
+private:
     CPU6502 *cpu;
     PPU *ppu;
     std::shared_ptr<Cartridge> cartridge;

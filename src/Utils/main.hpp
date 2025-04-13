@@ -1,25 +1,22 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
-#include "CPU/CPU6502.h"
 #include <string>
 
-namespace utils
-{
+#include "CPU/CPU6502.h"
 
-inline std::string uint8ToString(uint8_t value)
-{
+namespace utils {
 
+inline std::string uint8ToString(uint8_t value) {
     return std::to_string(value);
 }
 
-inline std::string hexToString(uint8_t opcode)
-{
-    char buffer[5];
-    snprintf(buffer, sizeof(buffer), "[ 0x%02X ]", opcode);
-    return buffer;
+std::string hexToString(uint32_t n, uint8_t d) {
+    std::string s(d, '0');
+    for (int i = d - 1; i >= 0; i--, n >>= 4)
+        s[i] = "0123456789ABCDEF"[n & 0xF];
+    return "0x" + s;
 }
+}  // namespace utils
 
-} // namespace utils
-
-#endif // UTILS_HPP
+#endif  // UTILS_HPP

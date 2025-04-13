@@ -1,54 +1,52 @@
 #pragma once
 
-#include "Assembly/Instructions.h"
-#include "Bus/Bus.h"
-#include "CPU/CPU6502.h"
-#include "JIT/Compiler.h"
-#include "config.h"
-#include "Libraries/olcPixelGameEngine.h"
-#include "PPU/PPU.h"
 #include <bitset>
 #include <cstdio>
 #include <unordered_map>
 
-class GameWindow : public olc::PixelGameEngine
-{
-  public:
+#include "Assembly/Instructions.h"
+#include "Bus/Bus.h"
+#include "CPU/CPU6502.h"
+#include "JIT/Compiler.h"
+#include "Libraries/olcPixelGameEngine.h"
+#include "PPU/PPU.h"
+#include "Utils/main.hpp"
+#include "config.h"
+
+class GameWindow : public olc::PixelGameEngine {
+public:
     GameWindow(PPU *ppu_, CPU6502 *cpu_, JITCompiler *jit_, Bus *bus_)
-        : ppu(ppu_), cpu(cpu_), jit(jit_), bus(bus_), isPaused(true),
-          isStepping(false)
-    {
+        : ppu(ppu_),
+          cpu(cpu_),
+          jit(jit_),
+          bus(bus_),
+          isPaused(true),
+          isStepping(false) {
         sAppName = "NES Emulator Debug View";
     }
 
-    bool OnUserCreate() override
-    {
+    bool OnUserCreate() override {
         isPaused = true;
         return true;
     }
 
-    bool OnUserUpdate(float fElapsedTime) override
-    {
+    bool OnUserUpdate(float fElapsedTime) override {
 #if DEBUG_MODE
         if (GetKey(olc::Key::P).bPressed)
             isPaused = !isPaused;
 
-        if (GetKey(olc::Key::S).bPressed && isPaused)
-        {
+        if (GetKey(olc::Key::S).bPressed && isPaused) {
             isStepping = true;
-             printf("OPCODE: %02X\n", bus->read(cpu->getPC()));
+            printf("OPCODE: %02X\n", bus->read(cpu->getPC()));
         }
 
-
-        if (isPaused && isStepping)
-        {
+        if (isPaused && isStepping) {
             RunSingleInstruction();
             isPaused = true;
             isStepping = false;
         }
 
-        if (!isPaused)
-        {
+        if (!isPaused) {
             RunEmulationFrame();
         }
 #else
@@ -59,7 +57,7 @@ class GameWindow : public olc::PixelGameEngine
         return true;
     }
 
-  private:
+private:
     PPU *ppu;
     CPU6502 *cpu;
     JITCompiler *jit;
@@ -68,58 +66,47 @@ class GameWindow : public olc::PixelGameEngine
     bool isPaused;
     bool isStepping;
 
-    void RunSingleInstruction()
-    {
-        if (cpu->getCycles() == 0)
-        {
+    void RunSingleInstruction() {
+        if (cpu->getCycles() == 0) {
             cpu->step(*jit);
         }
 
-        do
-        {
+        do {
             ppu->clock();
             ppu->clock();
             ppu->clock();
 
-            if (ppu->getCycles() % 3 == 0)
-            {
-                if (cpu->getCycles() == 0)
-                {
+            if (ppu->getCycles() % 3 == 0) {
+                if (cpu->getCycles() == 0) {
                     cpu->step(*jit);
                 }
 
                 cpu->clock(*jit);
             }
 
-            if (ppu->nmiTriggered())
-            {
+            if (ppu->nmiTriggered()) {
                 cpu->triggerNMI();
                 ppu->clearNmiFlag();
             }
         } while (cpu->getCycles() > 0);
     }
 
-    void RunEmulationFrame()
-{
-    const int totalPPUCyclesPerFrame = 341 * 262;
-    while (ppu->getCycles() < totalPPUCyclesPerFrame)
-    {
-        ppu->clock();
+    void RunEmulationFrame() {
+        const int totalPPUCyclesPerFrame = 341 * 262;
+        while (ppu->getCycles() < totalPPUCyclesPerFrame) {
+            ppu->clock();
 
-        if (ppu->getCycles() % 3 == 0)
-        {
-            if (cpu->getCycles() == 0)
-            {
-                cpu->step(*jit);
+            if (ppu->getCycles() % 3 == 0) {
+                if (cpu->getCycles() == 0) {
+                    cpu->step(*jit);
+                }
+
+                cpu->clock(*jit);
             }
-
-            cpu->clock(*jit);
         }
     }
-}
 
-    void DrawScreen()
-    {
+    void DrawScreen() {
         constexpr int ppuWidth = 256;
 
 #if SHOW_INSTRUCTIONS
@@ -132,16 +119,13 @@ class GameWindow : public olc::PixelGameEngine
 
         DrawDebugInfo(ppuWidth - 125, 10);
 #else
-        if (ppu->isFrameComplete())
-        {
+        if (ppu->isFrameComplete()) {
             ppu->renderFrame();
 
             const std::array<olc::Pixel, 256 * 240> &frame =
                 ppu->getFrameBuffer();
-            for (int y = 0; y < 240; ++y)
-            {
-                for (int x = 0; x < 256; ++x)
-                {
+            for (int y = 0; y < 240; ++y) {
+                for (int x = 0; x < 256; ++x) {
                     olc::Pixel color = frame[y * 256 + x];
                     Draw(x, y, color);
                 }
@@ -150,42 +134,40 @@ class GameWindow : public olc::PixelGameEngine
 #endif
     }
 
-    void DrawDebugInfo(int x, int y)
-    {
+    void DrawDebugInfo(int x, int y) {
         olc::Pixel textColor = olc::WHITE;
         float scale = 0.5f;
 
         DrawStringDecal({(float)x, (float)(y + 0)}, "CPU REGISTERS:", textColor,
                         {scale, scale});
         DrawStringDecal({(float)x, (float)(y + 10)},
-                        "PC: " + Hex(cpu->getPC(), 4), textColor,
+                        "PC: " + utils::hexToString(cpu->getPC(), 4), textColor,
                         {scale, scale});
         DrawStringDecal({(float)x, (float)(y + 20)},
-                        "A:  " + Hex(cpu->getA(), 2), textColor,
+                        "A:  " + utils::hexToString(cpu->getA(), 2), textColor,
                         {scale, scale});
         DrawStringDecal({(float)x, (float)(y + 30)},
-                        "X:  " + Hex(cpu->getX(), 2), textColor,
+                        "X:  " + utils::hexToString(cpu->getX(), 2), textColor,
                         {scale, scale});
         DrawStringDecal({(float)x, (float)(y + 40)},
-                        "Y:  " + Hex(cpu->getY(), 2), textColor,
+                        "Y:  " + utils::hexToString(cpu->getY(), 2), textColor,
                         {scale, scale});
         DrawStringDecal({(float)x, (float)(y + 50)},
-                        "SP: " + Hex(cpu->getSP(), 2), textColor,
+                        "SP: " + utils::hexToString(cpu->getSP(), 2), textColor,
                         {scale, scale});
 
         uint8_t p = cpu->getP();
         std::string flags = "";
-        for (int i = 7; i >= 0; i--)
-        {
+        for (int i = 7; i >= 0; i--) {
             flags += (p & (1 << i)) ? '1' : '0';
         }
         DrawStringDecal({(float)x, (float)(y + 60)}, "FLAGS: " + flags,
                         textColor, {scale, scale});
 
-        DrawStringDecal({(float)x, (float)(y + 70)},
-                        "STATE: " +
-                            std::string(isPaused ? "PAUSED" : "RUNNING"),
-                        isPaused ? olc::RED : olc::GREEN, {scale, scale});
+        DrawStringDecal(
+            {(float)x, (float)(y + 70)},
+            "STATE: " + std::string(isPaused ? "PAUSED" : "RUNNING"),
+            isPaused ? olc::RED : olc::GREEN, {scale, scale});
 
         Instructions instructions;
         std::string opcodeName =
@@ -193,7 +175,8 @@ class GameWindow : public olc::PixelGameEngine
 
         DrawStringDecal({(float)x, (float)(y + 80)},
                         "OPCODE: " + opcodeName + " [" +
-                            Hex(bus->read(cpu->getPC()), 2) + "]",
+                            utils::hexToString(bus->read(cpu->getPC()), 2) +
+                            "]",
                         textColor, {scale, scale});
 
         DrawStringDecal({(float)x, (float)(y + 100)}, "CONTROLS:", olc::YELLOW,
@@ -202,13 +185,5 @@ class GameWindow : public olc::PixelGameEngine
                         textColor, {scale, scale});
         DrawStringDecal({(float)x, (float)(y + 120)}, "S - Step (when paused)",
                         textColor, {scale, scale});
-    }
-
-    std::string Hex(uint32_t n, uint8_t d)
-    {
-        std::string s(d, '0');
-        for (int i = d - 1; i >= 0; i--, n >>= 4)
-            s[i] = "0123456789ABCDEF"[n & 0xF];
-        return "0x" + s;
     }
 };

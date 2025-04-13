@@ -1,7 +1,6 @@
 #pragma once
 
-enum class MirrorType
-{
+enum class MirrorType {
     HORIZONTAL,
     VERTICAL,
     SINGLE_SCREEN_LO,

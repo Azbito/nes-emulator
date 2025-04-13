@@ -1,22 +1,20 @@
 #pragma once
 
-#include "Cartridge/Cartridge.h"
-#include "config.h"
-#include "Libraries/olcPixelGameEngine.h"
-#include "PPU/MirrorType.h"
 #include <array>
 #include <cstdint>
 #include <memory>
 
+#include "Cartridge/Cartridge.h"
+#include "Libraries/olcPixelGameEngine.h"
+#include "PPU/MirrorType.h"
+#include "config.h"
 
 class Bus;
 class Cartridge;
 
-class PPU
-{
-  public:
-    enum Masks
-    {
+class PPU {
+public:
+    enum Masks {
         GREY_SCALE = (1 << 0),
         SHOW_BACKGROUND_LEFT = (1 << 1),
         SHOW_SPRITES_LEFT = (1 << 2),
@@ -61,10 +59,10 @@ class PPU
     uint8_t getTileIDAtVRAM(uint16_t v) const;
     olc::Pixel getColorFromPalette(uint8_t paletteIndex);
 
-  private:
+private:
     std::shared_ptr<Cartridge> cartridge;
     Bus *bus = nullptr;
-    olc::PixelGameEngine* pge;
+    olc::PixelGameEngine *pge;
 
     std::array<olc::Pixel, 256 * 240> framebuffer;
 
@@ -85,7 +83,7 @@ class PPU
     //* $2006 & $2007
     uint16_t m_VRAMAddress = 0x0000;
     uint16_t m_tempAddress = 0x0000;
-    bool m_writeToggle = false; //* Address latch
+    bool m_writeToggle = false;  //* Address latch
 
     std::array<uint8_t, 0x4000> m_VRAM{};
     uint8_t m_VRAMReadBuffer = 0x00;
