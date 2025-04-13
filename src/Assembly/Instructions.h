@@ -8,9 +8,8 @@
 class CPU6502;
 class Bus;
 
-class Instructions
-{
-  public:
+class Instructions {
+public:
     std::string getOpcodeName(uint8_t opcode);
 
     void handleSEP(CPU6502 &cpu, Bus &bus);
@@ -24,6 +23,7 @@ class Instructions
     void handleLDXAbsolute(CPU6502 &cpu, Bus &bus);
     void handleNOP(CPU6502 &cpu, Bus &bus);
     void handleNOPAbsoluteX(CPU6502 &cpu, Bus &bus);
+    void handleRTI(CPU6502 &cpu, Bus &bus);
     void handleLDXIndirectY(CPU6502 &cpu, Bus &bus);
     void handleLDYAbsoluteX(CPU6502 &cpu, Bus &bus);
     void handleASLAbsoluteX(CPU6502 &cpu, Bus &bus);
@@ -90,7 +90,7 @@ class Instructions
     void handlePLA(CPU6502 &cpu, Bus &bus);
     static std::unordered_map<uint8_t, std::string> opcodeMap;
 
-  private:
+private:
     uint8_t fetchImmediate(CPU6502 &cpu, Bus &bus);
     uint8_t fetchZeroPage(CPU6502 &cpu, Bus &bus);
     uint8_t fetchZeroPageX(CPU6502 &cpu, Bus &bus);

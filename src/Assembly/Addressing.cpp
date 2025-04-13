@@ -83,5 +83,6 @@ uint8_t Instructions::fetchIndirectIndexedY(CPU6502 &cpu, Bus &bus)
 
 uint16_t Instructions::fetchAbsoluteAddress(CPU6502 &cpu, Bus &bus)
 {
-    return bus.read(cpu.getPC() + 1) | (bus.read(cpu.getPC() + 2) << 8);
+    return static_cast<uint16_t>(bus.read(cpu.getPC() + 1)) |
+           (static_cast<uint16_t>(bus.read(cpu.getPC() + 2)) << 8);
 }

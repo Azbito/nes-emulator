@@ -1,6 +1,10 @@
 #define OLC_PGE_APPLICATION
 
-#include "config.h"
+#include <fstream>
+#include <iostream>
+#include <memory>
+#include <vector>
+
 #include "Bus/Bus.h"
 #include "CPU/CPU6502.h"
 #include "Cartridge/Cartridge.h"
@@ -8,13 +12,9 @@
 #include "Libraries/olcPixelGameEngine.h"
 #include "PPU/PPU.h"
 #include "Screen/GameWindow.hpp"
-#include <fstream>
-#include <iostream>
-#include <memory>
-#include <vector>
+#include "config.h"
 
-std::vector<uint8_t> loadROM(const std::string &filename)
-{
+std::vector<uint8_t> loadROM(const std::string& filename) {
     std::ifstream file(filename, std::ios::binary);
     if (!file)
         throw std::runtime_error("Não foi possível abrir a ROM!");
@@ -23,11 +23,12 @@ std::vector<uint8_t> loadROM(const std::string &filename)
                                 std::istreambuf_iterator<char>());
 }
 
-int main()
-{
-    auto romData = loadROM("dk.nes");
+int main() {
+    auto romData = loadROM("nestest.nes");
 
     auto cart = std::make_shared<Cartridge>(romData);
+
+    const auto& prgROM = cart->getPRGROM();
 
     Bus bus;
     CPU6502 cpu;

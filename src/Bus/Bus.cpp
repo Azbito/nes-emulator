@@ -27,8 +27,6 @@ void Bus::connectCartridge(std::shared_ptr<Cartridge> cart)
 
 uint8_t Bus::read(uint16_t address)
 {
-  printf("\nADDRESS: $%04X\n", address);
-
     if (address < 0x2000)
         return ram[address % 0x0800];
 

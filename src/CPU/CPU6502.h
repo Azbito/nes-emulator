@@ -1,25 +1,25 @@
 #ifndef CPU6502_H
 #define CPU6502_H
 
-#include "JIT/Compiler.h"
 #include <cstdint>
 #include <cstring>
 #include <iostream>
 
+#include "JIT/Compiler.h"
+
+
 class Bus;
 
-class CPU6502
-{
-  private:
+class CPU6502 {
+private:
     uint8_t m_A, m_X, m_Y, m_P, m_SP;
     uint16_t m_PC;
     uint32_t m_cycles;
     uint8_t m_RAM[65536];
     Bus *bus;
 
-  public:
-    enum Flags
-    {
+public:
+    enum Flags {
         FLAG_CARRY = 1 << 0,
         FLAG_ZERO = 1 << 1,
         FLAG_INTERRUPT = 1 << 2,
@@ -32,70 +32,54 @@ class CPU6502
 
     CPU6502();
 
-    inline void connectBus(Bus *busPtr)
-    {
+    inline void connectBus(Bus *busPtr) {
         bus = busPtr;
     }
 
-    inline uint8_t getA() const
-    {
+    inline uint8_t getA() const {
         return m_A;
     }
-    inline uint8_t getX() const
-    {
+    inline uint8_t getX() const {
         return m_X;
     }
-    inline uint8_t getY() const
-    {
+    inline uint8_t getY() const {
         return m_Y;
     }
-    inline uint8_t getP() const
-    {
+    inline uint8_t getP() const {
         return m_P;
     }
-    inline uint8_t getSP() const
-    {
+    inline uint8_t getSP() const {
         return m_SP;
     }
-    inline uint16_t getPC() const
-    {
+    inline uint16_t getPC() const {
         return m_PC;
     }
-    inline uint32_t getCycles() const
-    {
+    inline uint32_t getCycles() const {
         return m_cycles;
     }
-    inline uint8_t *getRAM()
-    {
+    inline uint8_t *getRAM() {
         return m_RAM;
     }
 
-    inline void setA(uint8_t value)
-    {
+    inline void setA(uint8_t value) {
         m_A = value;
     }
-    inline void setX(uint8_t value)
-    {
+    inline void setX(uint8_t value) {
         m_X = value;
     }
-    inline void setY(uint8_t value)
-    {
+    inline void setY(uint8_t value) {
         m_Y = value;
     }
-    inline void setP(uint8_t value)
-    {
+    inline void setP(uint8_t value) {
         m_P = value;
     }
-    inline void setSP(uint8_t value)
-    {
+    inline void setSP(uint8_t value) {
         m_SP = value;
     }
-    inline void setPC(uint16_t value)
-    {
+    inline void setPC(uint16_t value) {
         m_PC = value;
     }
-    inline void setCycles(uint32_t value)
-    {
+    inline void setCycles(uint32_t value) {
         m_cycles = value;
     }
 
@@ -110,6 +94,8 @@ class CPU6502
 
     void writeMemory(uint16_t address, uint8_t value);
     uint8_t readMemory(uint16_t address);
+
+    void setStatusRegister(uint8_t status);
 
     void setStatus(uint8_t status);
     void setFlag(uint8_t flag, bool value);

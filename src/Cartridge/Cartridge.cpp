@@ -45,6 +45,11 @@ MirrorType Cartridge::getMirrorType() const
     return mirroring;
 }
 
+const std::vector<uint8_t>& Cartridge::getPRGROM() const
+{
+    return prgROM;
+}
+
 const std::vector<uint8_t> &Cartridge::getCHRROM() const
 {
     return chrROM;

@@ -1,26 +1,28 @@
 #include "JIT/Compiler.h"
-#include "Assembly/Instructions.h"
 
 #include <bitset>
 #include <iomanip>
 
-JITCompiler::~JITCompiler()
-{
+#include "Assembly/Instructions.h"
+#include "CPU/CPU6502.h"
+
+JITCompiler::~JITCompiler() {
     delete asm_instructions;
+
+    asm_instructions = nullptr;
 };
 
-JITCompiler::JITCompiler(size_t bufferSize)
-{
+JITCompiler::JITCompiler(size_t bufferSize) {
     asm_instructions = new Instructions();
-    opcodeTable[0xBE] = &Instructions::handleLDXIndirectY;
-    opcodeTable[0x2A] = &Instructions::handleImmediateLDX;
+    // opcodeTable[0xBE] = &Instructions::handleLDXIndirectY;
+    // opcodeTable[0x2A] = &Instructions::handleImmediateLDX;
     opcodeTable[0xAE] = &Instructions::handleLDXAbsolute;
     opcodeTable[0x24] = &Instructions::handleZeroPageBIT;
     opcodeTable[0x09] = &Instructions::handleORA;
     opcodeTable[0x99] = &Instructions::handleAbsoluteYSTA;
     opcodeTable[0x4C] = &Instructions::handleAbsoluteJMP;
     opcodeTable[0xEE] = &Instructions::handleAbsoluteINC;
-    opcodeTable[0xAC] = &Instructions::handleLDYAbsoluteX;
+    // opcodeTable[0xAC] = &Instructions::handleLDYAbsoluteX;
     opcodeTable[0x95] = &Instructions::handleZeroPageXSTA;
     opcodeTable[0x29] = &Instructions::handleAND;
     opcodeTable[0xA5] = &Instructions::handleZeroPageLDA;
@@ -64,17 +66,19 @@ JITCompiler::JITCompiler(size_t bufferSize)
     opcodeTable[0x1A] = &Instructions::handleNOP;
     opcodeTable[0x1C] = &Instructions::handleNOPAbsoluteX;
     opcodeTable[0x1E] = &Instructions::handleASLAbsoluteX;
+
+    // opcodeTable[0x2A] = &Instructions::handleROLAccumulator;
+
     opcodeTable[0x82] = &Instructions::handleNOPIMM;
-    opcodeTable[0x80] = &Instructions::handleBRK;
     opcodeTable[0x45] = &Instructions::handleEORZP;
     opcodeTable[0x53] = &Instructions::handleSREIndirectIndexed;
-    opcodeTable[0x2] = &Instructions::handleKIL;
+    // opcodeTable[0x2] = &Instructions::handleKIL;
     opcodeTable[0x1] = &Instructions::handleORAIndirectIndexedX;
     opcodeTable[0x4E] = &Instructions::handleLSRAbsolute;
     opcodeTable[0x78] = &Instructions::handleSEI;
     opcodeTable[0xD6] = &Instructions::handleDECZeroPageX;
     opcodeTable[0xE5] = &Instructions::handleSBCZeroPage;
-    opcodeTable[0x8E] = &Instructions::handleSTAAbsolute;
+    // opcodeTable[0x8E] = &Instructions::handleSTXAbsolute;
     opcodeTable[0xBA] = &Instructions::handleTSX;
     opcodeTable[0xD2] = &Instructions::handleSEP;
     opcodeTable[0xCE] = &Instructions::handleDECAbsolute;
@@ -82,26 +86,26 @@ JITCompiler::JITCompiler(size_t bufferSize)
     opcodeTable[0x0A] = &Instructions::handleASLAccumulator;
     opcodeTable[0xF8] = &Instructions::handleSED;
     opcodeTable[0xD8] = &Instructions::handleCLD;
-    opcodeTable[0x8D] = &Instructions::handleSTA;
+    opcodeTable[0x8D] = &Instructions::handleSTAAbsolute;
     opcodeTable[0xA2] = &Instructions::handleLDXImmediate;
     opcodeTable[0x9A] = &Instructions::handleTXS;
     opcodeTable[0xAD] = &Instructions::handleLDAAbsolute;
+    opcodeTable[0x40] = &Instructions::handleRTI;
     opcodeTable[0x10] = &Instructions::handleBPL;
     opcodeTable[0xFF] = &Instructions::handleISCAbsoluteX;
 }
 
-void JITCompiler::compileOpcode(uint8_t opcode, CPU6502 &cpu)
-{
-    if (opcodeTable[opcode])
-    {
-      printf(" 0x%02X", opcode);
-
+void JITCompiler::compileOpcode(uint8_t opcode, CPU6502 &cpu) {
+    printf("OPCODE: %02X | $%04X\n", opcode, cpu.getPC());
+    if (opcodeTable[opcode]) {
         (asm_instructions->*opcodeTable[opcode])(cpu, *bus);
+
+        return;
     }
-    else
-    {
-        printf("\033[1;31m[SYSTEM] Opcode not implemented: 0x%02X \033[0m\n",
-               +opcode);
-        exit(1);
-    }
+
+    printf("\033[1;31m[SYSTEM] Opcode not implemented: 0x%02X \033[0m\n",
+           +opcode);
+
+    system("pause");
+    asm_instructions->handleNOP(cpu, *bus);
 }
