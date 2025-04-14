@@ -24,6 +24,7 @@ public:
     void handleNOP(CPU6502 &cpu, Bus &bus);
     void handleNOPAbsoluteX(CPU6502 &cpu, Bus &bus);
     void handleRTI(CPU6502 &cpu, Bus &bus);
+    void handleAbsoluteSTX(CPU6502 &cpu, Bus &bus);
     void handleLDXIndirectY(CPU6502 &cpu, Bus &bus);
     void handleLDYAbsoluteX(CPU6502 &cpu, Bus &bus);
     void handleASLAbsoluteX(CPU6502 &cpu, Bus &bus);

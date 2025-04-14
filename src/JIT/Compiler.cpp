@@ -87,6 +87,7 @@ JITCompiler::JITCompiler(size_t bufferSize) {
     opcodeTable[0xF8] = &Instructions::handleSED;
     opcodeTable[0xD8] = &Instructions::handleCLD;
     opcodeTable[0x8D] = &Instructions::handleSTAAbsolute;
+    opcodeTable[0x8E] = &Instructions::handleAbsoluteSTX;
     opcodeTable[0xA2] = &Instructions::handleLDXImmediate;
     opcodeTable[0x9A] = &Instructions::handleTXS;
     opcodeTable[0xAD] = &Instructions::handleLDAAbsolute;
@@ -98,12 +99,10 @@ JITCompiler::JITCompiler(size_t bufferSize) {
 void JITCompiler::compileOpcode(uint8_t opcode, CPU6502 &cpu) {
     if (opcodeTable[opcode]) {
         (asm_instructions->*opcodeTable[opcode])(cpu, *bus);
+        printf("%02X | PC: $%04X\n", opcode, cpu.getPC());
         return;
     }
 
     printf("\033[1;31m[SYSTEM] Opcode not implemented: 0x%02X \033[0m\n",
            +opcode);
-
-    system("pause");
-    asm_instructions->handleNOP(cpu, *bus);
 }

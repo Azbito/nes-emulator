@@ -4,9 +4,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "PPU/MirrorType.h"
 #include "PPU/PPU.h"
-
 
 class Cartridge {
 public:
@@ -18,13 +16,9 @@ public:
     uint8_t readPRG(uint16_t address);
     void writePRG(uint16_t address, uint8_t value);
 
-    MirrorType getMirrorType() const;
-
 private:
     std::vector<uint8_t> prgROM;
     std::vector<uint8_t> chrROM;
-
-    MirrorType mirroring = MirrorType::HORIZONTAL;
 };
 
 #endif

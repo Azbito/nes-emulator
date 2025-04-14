@@ -72,38 +72,22 @@ private:
         }
 
         do {
-            ppu->clock();
-            ppu->clock();
-            ppu->clock();
-
-            if (ppu->getCycles() % 3 == 0) {
-                if (cpu->getCycles() == 0) {
-                    cpu->step(*jit);
-                }
-
-                cpu->clock(*jit);
+            if (cpu->getCycles() == 0) {
+                cpu->step(*jit);
             }
 
-            if (ppu->nmiTriggered()) {
-                cpu->triggerNMI();
-                ppu->clearNmiFlag();
-            }
+            cpu->clock(*jit);
+
         } while (cpu->getCycles() > 0);
     }
 
     void RunEmulationFrame() {
-        const int totalPPUCyclesPerFrame = 341 * 262;
-        while (ppu->getCycles() < totalPPUCyclesPerFrame) {
-            ppu->clock();
-
-            if (ppu->getCycles() % 3 == 0) {
-                if (cpu->getCycles() == 0) {
-                    cpu->step(*jit);
-                }
-
-                cpu->clock(*jit);
-            }
+        if (cpu->getCycles() == 0) {
+            cpu->step(*jit);
         }
+
+        cpu->clock(*jit);
+        ppu->clock();
     }
 
     void DrawScreen() {
@@ -119,18 +103,7 @@ private:
 
         DrawDebugInfo(ppuWidth - 125, 10);
 #else
-        if (ppu->isFrameComplete()) {
-            ppu->renderFrame();
-
-            const std::array<olc::Pixel, 256 * 240> &frame =
-                ppu->getFrameBuffer();
-            for (int y = 0; y < 240; ++y) {
-                for (int x = 0; x < 256; ++x) {
-                    olc::Pixel color = frame[y * 256 + x];
-                    Draw(x, y, color);
-                }
-            }
-        }
+        // todo: render frames
 #endif
     }
 

@@ -66,20 +66,23 @@ std::string Instructions::getOpcodeName(uint8_t opcode) {
 void Instructions::handleBPL(CPU6502 &cpu, Bus &bus) {
     int8_t offset = static_cast<int8_t>(bus.read(cpu.getPC() + 1));
     uint16_t pc = cpu.getPC();
+
     cpu.setPC(pc + 2);
+
+    int cycles = 2;
 
     if (!cpu.getFlag(cpu.FLAG_NEGATIVE)) {
         uint16_t target = pc + 2 + offset;
-        cpu.setCycles(cpu.getCycles() + 1);
-
-        if ((target & 0xFF00) != ((pc + 2) & 0xFF00)) {
-            cpu.setCycles(cpu.getCycles() + 1);
-        }
 
         cpu.setPC(target);
+        cycles = 3;
+
+        if ((target & 0xFF00) != ((pc + 2) & 0xFF00)) {
+            cycles++;
+        }
     }
 
-    cpu.setCycles(cpu.getCycles() + 2);
+    cpu.setCycles(cpu.getCycles() + cycles);
 }
 
 void Instructions::handleAbsXLDA(CPU6502 &cpu, Bus &bus) {
@@ -107,17 +110,20 @@ void Instructions::handleDEX(CPU6502 &cpu, Bus &bus) {
 }
 
 void Instructions::handleBNE(CPU6502 &cpu, Bus &bus) {
-    int8_t offset = fetchRelative(cpu, bus);
+    uint16_t pc = cpu.getPC();
+    uint8_t offsetByte = bus.read(pc + 1);
+    int8_t offset = static_cast<int8_t>(offsetByte);
 
     if (!cpu.isFlagSet(cpu.FLAG_ZERO)) {
         cpu.setCycles(cpu.getCycles() + 1);
-        cpu.setPC(cpu.getPC() + offset);
+        cpu.setPC(pc + 2 + offset);
         return;
     }
 
     cpu.setCycles(cpu.getCycles() + 2);
-    cpu.setPC(cpu.getPC() + 2);
+    cpu.setPC(pc + 2);
 }
+
 void Instructions::handleZeroPageSTA(CPU6502 &cpu, Bus &bus) {
     uint8_t address = fetchZeroPage(cpu, bus);
     bus.write(address, cpu.getA());
@@ -130,6 +136,14 @@ void Instructions::handleZeroPageSTX(CPU6502 &cpu, Bus &bus) {
     bus.write(address, cpu.getX());
     cpu.setCycles(cpu.getCycles() + 3);
     cpu.setPC(cpu.getPC() + 2);
+}
+
+void Instructions::handleAbsoluteSTX(CPU6502 &cpu, Bus &bus) {
+    uint8_t address = fetchAbsolute(cpu, bus);
+
+    bus.write(address, cpu.getX());
+    cpu.setCycles(cpu.getCycles() + 4);
+    cpu.setPC(cpu.getPC() + 3);
 }
 
 void Instructions::handleDEY(CPU6502 &cpu, Bus &bus) {
@@ -814,8 +828,8 @@ void Instructions::handleTXS(CPU6502 &cpu, Bus &bus) {
 void Instructions::handleLDAAbsolute(CPU6502 &cpu, Bus &bus) {
     uint16_t address = fetchAbsoluteAddress(cpu, bus);
     uint8_t value = bus.read(address);
+
     cpu.setA(value);
-    printf("%02X - $%04X\n", cpu.getA(), address);
     cpu.updateZNFlags(cpu.getA());
     cpu.setCycles(cpu.getCycles() + 4);
     cpu.setPC(cpu.getPC() + 3);

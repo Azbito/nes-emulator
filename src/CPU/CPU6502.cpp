@@ -21,7 +21,6 @@ void CPU6502::reset() {
     uint16_t startPC = (high << 8) | low;
 
     setPC(startPC);
-    printf("Reset vector: $%04X -> $%04X\n", 0xFFFC, startPC);
     setA(0);
     setX(0);
     setY(0);

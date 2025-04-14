@@ -6,7 +6,6 @@
 #include "Cartridge/Cartridge.h"
 #include "PPU/PPU.h"
 
-
 Bus::Bus() {
     std::memset(ram, 0, sizeof(ram));
     cpu = nullptr;
@@ -31,49 +30,35 @@ uint8_t Bus::read(uint16_t address) {
     if (address >= 0x8000 && cartridge)
         return cartridge->readPRG(address);
 
-    if (address == 0x2002) {
-        uint8_t status = ppu->readStatus();
-        return status;
-    }
-
-    if (address == 0x2007) {
-        return ppu->readData();
+    if (address >= ppu->registers.STATUS) {
+        return ppu->readStatus();
     }
 
     return 0x00;
 }
 
 void Bus::write(uint16_t address, uint8_t value) {
-    if (address >= 0x8000 && cartridge)
-        return;
-
-    if (address == 0x2000) {
-        ppu->writeControl(value);
-        return;
-    }
-
-    if (address == 0x2001) {
-        ppu->writeMask(value);
-        return;
-    }
-
-    if (address < 0x2000) {
-        ram[address % 0x0800] = value;
-        return;
-    }
-
     if (address >= 0x8000 && cartridge) {
         cartridge->writePRG(address, value);
         return;
     }
 
-    if (address == 0x2006) {
-        ppu->writeAddress(value);
+    if (address == ppu->registers.CTRL) {
+        ppu->writeCTRL(value);
         return;
     }
 
-    if (address == 0x2007) {
-        ppu->writeData(value);
+    if (address == ppu->registers.MASK) {
+        return;
+    }
+
+    if (address == ppu->registers.SCROLL) {
+        ppu->writeScroll(value);
+        return;
+    }
+
+    if (address == ppu->registers.ADDR) {
+        ppu->writeAddr(value);
         return;
     }
 }

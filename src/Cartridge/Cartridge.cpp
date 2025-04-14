@@ -3,7 +3,6 @@
 #include <cstdio>
 #include <stdexcept>
 
-
 Cartridge::Cartridge(const std::vector<uint8_t> &romData) {
     if (romData.size() < 16)
         throw std::runtime_error("ROM muito pequena: faltando cabeçalho");
@@ -13,9 +12,6 @@ Cartridge::Cartridge(const std::vector<uint8_t> &romData) {
 
     uint8_t flags6 = romData[6];
     bool verticalMirroring = false;
-
-    mirroring =
-        verticalMirroring ? MirrorType::VERTICAL : MirrorType::HORIZONTAL;
 
     size_t prgRomSize = prgRomChunks * 0x4000;
     size_t chrRomSize = chrRomChunks * 0x2000;
@@ -35,10 +31,6 @@ Cartridge::Cartridge(const std::vector<uint8_t> &romData) {
     } else {
         chrROM = std::vector<uint8_t>(0x2000, 0);
     }
-}
-
-MirrorType Cartridge::getMirrorType() const {
-    return mirroring;
 }
 
 const std::vector<uint8_t> &Cartridge::getPRGROM() const {
