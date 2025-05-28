@@ -2,9 +2,13 @@
 
 #include <bitset>
 #include <iomanip>
+#include <set>
 
 #include "Assembly/Instructions.h"
 #include "CPU/CPU6502.h"
+#include "Log/Log.hpp"
+#include "Utils/main.hpp"
+#include "config.h"
 
 JITCompiler::~JITCompiler() {
     delete asm_instructions;
@@ -14,15 +18,13 @@ JITCompiler::~JITCompiler() {
 
 JITCompiler::JITCompiler(size_t bufferSize) {
     asm_instructions = new Instructions();
-    // opcodeTable[0xBE] = &Instructions::handleLDXIndirectY;
-    // opcodeTable[0x2A] = &Instructions::handleImmediateLDX;
+
     opcodeTable[0xAE] = &Instructions::handleLDXAbsolute;
     opcodeTable[0x24] = &Instructions::handleZeroPageBIT;
     opcodeTable[0x09] = &Instructions::handleORA;
     opcodeTable[0x99] = &Instructions::handleAbsoluteYSTA;
     opcodeTable[0x4C] = &Instructions::handleAbsoluteJMP;
     opcodeTable[0xEE] = &Instructions::handleAbsoluteINC;
-    // opcodeTable[0xAC] = &Instructions::handleLDYAbsoluteX;
     opcodeTable[0x95] = &Instructions::handleZeroPageXSTA;
     opcodeTable[0x29] = &Instructions::handleAND;
     opcodeTable[0xA5] = &Instructions::handleZeroPageLDA;
@@ -42,7 +44,9 @@ JITCompiler::JITCompiler(size_t bufferSize) {
     opcodeTable[0x8A] = &Instructions::handleTXA;
     opcodeTable[0xF0] = &Instructions::handleRelativeBEQ;
     opcodeTable[0xC8] = &Instructions::handleINY;
+    opcodeTable[0xE8] = &Instructions::handleINX;
     opcodeTable[0x2C] = &Instructions::handleAbsBIT;
+    opcodeTable[0xEA] = &Instructions::handleNOP;
     opcodeTable[0x60] = &Instructions::handleRTS;
     opcodeTable[0xC0] = &Instructions::handleImmCPY;
     opcodeTable[0x90] = &Instructions::handleRelBCC;
@@ -66,19 +70,15 @@ JITCompiler::JITCompiler(size_t bufferSize) {
     opcodeTable[0x1A] = &Instructions::handleNOP;
     opcodeTable[0x1C] = &Instructions::handleNOPAbsoluteX;
     opcodeTable[0x1E] = &Instructions::handleASLAbsoluteX;
-
-    // opcodeTable[0x2A] = &Instructions::handleROLAccumulator;
-
+    opcodeTable[0x02] = &Instructions::handleKIL;
     opcodeTable[0x82] = &Instructions::handleNOPIMM;
     opcodeTable[0x45] = &Instructions::handleEORZP;
     opcodeTable[0x53] = &Instructions::handleSREIndirectIndexed;
-    // opcodeTable[0x2] = &Instructions::handleKIL;
     opcodeTable[0x1] = &Instructions::handleORAIndirectIndexedX;
     opcodeTable[0x4E] = &Instructions::handleLSRAbsolute;
     opcodeTable[0x78] = &Instructions::handleSEI;
     opcodeTable[0xD6] = &Instructions::handleDECZeroPageX;
     opcodeTable[0xE5] = &Instructions::handleSBCZeroPage;
-    // opcodeTable[0x8E] = &Instructions::handleSTXAbsolute;
     opcodeTable[0xBA] = &Instructions::handleTSX;
     opcodeTable[0xD2] = &Instructions::handleSEP;
     opcodeTable[0xCE] = &Instructions::handleDECAbsolute;
@@ -88,6 +88,7 @@ JITCompiler::JITCompiler(size_t bufferSize) {
     opcodeTable[0xD8] = &Instructions::handleCLD;
     opcodeTable[0x8D] = &Instructions::handleSTAAbsolute;
     opcodeTable[0x8E] = &Instructions::handleAbsoluteSTX;
+    opcodeTable[0x8C] = &Instructions::handleAbsoluteSTY;
     opcodeTable[0xA2] = &Instructions::handleLDXImmediate;
     opcodeTable[0x9A] = &Instructions::handleTXS;
     opcodeTable[0xAD] = &Instructions::handleLDAAbsolute;
@@ -97,12 +98,41 @@ JITCompiler::JITCompiler(size_t bufferSize) {
 }
 
 void JITCompiler::compileOpcode(uint8_t opcode, CPU6502 &cpu) {
+    static std::set<uint8_t> recordedOpcodes;
+
     if (opcodeTable[opcode]) {
         (asm_instructions->*opcodeTable[opcode])(cpu, *bus);
-        printf("%02X | PC: $%04X\n", opcode, cpu.getPC());
+
+#if LOGS
+        Logger logOpcode("opcode");
+        logOpcode.turnOffRegisterDate();
+        logOpcode.log(" " + utils::toHexString(opcode));
+
+        Logger logger("emulator");
+        if (recordedOpcodes.insert(opcode).second) {
+            logger.log("[SYSTEM] Opcode: 0x" + utils::toHexString(opcode) +
+                       " | PC: $" + utils::toHexString(cpu.getPC()) +
+                       " | A: 0x" + utils::toHexString(cpu.getA()) +
+                       " | X: 0x" + utils::toHexString(cpu.getX()) +
+                       " | Y: 0x" + utils::toHexString(cpu.getY()) +
+                       " | SP: 0x" + utils::toHexString(cpu.getSP()) +
+                       " | P: " + utils::toFlagString(cpu.getP()));
+        }
+
+        Logger loggerJit("jit");
+        loggerJit.log(utils::toHexString(opcode) + " | $" +
+                      utils::toHexString(cpu.getPC()));
+#endif
+
         return;
     }
 
+#if LOGS
+    Logger logger("jit");
+    logger.log("[ERROR] Opcode not implemented: 0x" +
+               utils::toHexString(opcode));
+#endif
+
     printf("\033[1;31m[SYSTEM] Opcode not implemented: 0x%02X \033[0m\n",
-           +opcode);
+           opcode);
 }

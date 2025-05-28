@@ -5,7 +5,7 @@
 
 Cartridge::Cartridge(const std::vector<uint8_t> &romData) {
     if (romData.size() < 16)
-        throw std::runtime_error("ROM muito pequena: faltando cabeçalho");
+        throw std::runtime_error("ROM too short.");
 
     uint8_t prgRomChunks = romData[4];
     uint8_t chrRomChunks = romData[5];
@@ -20,7 +20,7 @@ Cartridge::Cartridge(const std::vector<uint8_t> &romData) {
     size_t prgEnd = prgStart + prgRomSize;
 
     if (romData.size() < prgEnd)
-        throw std::runtime_error("ROM inválida: PRG-ROM incompleta");
+        throw std::runtime_error("PRG missing");
 
     prgROM = std::vector<uint8_t>(romData.begin() + prgStart,
                                   romData.begin() + prgEnd);

@@ -18,7 +18,7 @@ CPU6502::CPU6502() {
 void CPU6502::reset() {
     uint16_t low = bus->read(0xFFFC);
     uint16_t high = bus->read(0xFFFD);
-    uint16_t startPC = (high << 8) | low;
+    uint16_t startPC = ((high << 8) | low) - 0x4;
 
     setPC(startPC);
     setA(0);
@@ -26,6 +26,8 @@ void CPU6502::reset() {
     setY(0);
     setSP(0xFD);
     setP(0x24);
+
+    printf("[SYSTEM] CPU reset successfully!\nPC: $%04X | A: 0x%02X | X: 0x%02X | Y: 0x%02X | SP: 0x%02X | P: 0x%02X\n\n", startPC, getA(), getX(), getY(), getSP(), getP());
 }
 
 bool CPU6502::getFlag(uint8_t flag) {
@@ -55,11 +57,18 @@ void CPU6502::updateZNFlags(uint8_t value) {
 }
 
 uint8_t CPU6502::popStack() {
-    return readMemory(0x0100 + ++m_SP);
+    m_SP++;
+    uint8_t val = bus->read(0x100 + m_SP);
+    return val;
+}
+
+uint8_t CPU6502::pullStack() {
+    return bus->read(0x100 | ++m_SP);
 }
 
 void CPU6502::pushToStack(uint8_t value) {
-    writeMemory(0x0100 + m_SP--, value);
+    bus->write(0x0100 + m_SP, value);
+    m_SP--;
 }
 
 void CPU6502::pushToStack16(uint16_t value) {
@@ -112,34 +121,5 @@ void CPU6502::setStatusRegister(uint8_t status) {
 
 void CPU6502::step(JITCompiler &jit) {
     uint8_t opcode = bus->read(m_PC);
-
-    // std::ofstream logFile("emulator.log", std::ios::app);
-
-    // if (!logFile.is_open()) {
-    //     std::cerr << "Erro ao abrir o arquivo de log." << std::endl;
-    //     return;
-    // }
-
-    // logFile << "CYCLES: " << getCycles() << " | "
-    //         << "PC: $" << std::setw(4) << std::setfill('0') << std::hex
-    //         << getPC() + 1 << std::dec << " | "
-    //         << "OPCODE: " << std::setw(2) << std::setfill('0') << std::hex
-    //         << (int)opcode << std::dec << " | "
-    //         << "SP: $" << std::setw(2) << std::setfill('0') << std::hex
-    //         << (int)getSP() << std::dec << " | "
-    //         << "A: $" << std::setw(2) << std::setfill('0') << std::hex
-    //         << (int)getA() << std::dec << " | "
-    //         << "X: $" << std::setw(2) << std::setfill('0') << std::hex
-    //         << (int)getX() << std::dec << " | "
-    //         << "Y: $" << std::setw(2) << std::setfill('0') << std::hex
-    //         << (int)getY() << std::dec << " | "
-    //         << "Flags: " << (getFlag(FLAG_CARRY) ? "C" : "-")
-    //         << (getFlag(FLAG_ZERO) ? "Z" : "-")
-    //         << (getFlag(FLAG_INTERRUPT) ? "I" : "-")
-    //         << (getFlag(FLAG_DECIMAL) ? "D" : "-")
-    //         << (getFlag(FLAG_OVERFLOW) ? "V" : "-")
-    //         << (getFlag(FLAG_NEGATIVE) ? "N" : "-\n");
-    // logFile.close();
-
     jit.compileOpcode(opcode, *this);
 }

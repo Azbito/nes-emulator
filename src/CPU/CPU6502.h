@@ -89,6 +89,7 @@ public:
     void pushToStack(uint8_t value);
     void pushToStack16(uint16_t value);
     uint8_t popStack();
+    uint8_t pullStack();
 
     bool isNegativeFlagClean();
 

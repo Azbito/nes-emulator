@@ -3,8 +3,11 @@
 #include <cstdio>
 #include <cstring>
 
+#include "CPU/CPU6502.h"
 #include "Cartridge/Cartridge.h"
+#include "Log/Log.hpp"
 #include "PPU/PPU.h"
+#include "Utils/main.hpp"
 
 Bus::Bus() {
     std::memset(ram, 0, sizeof(ram));
@@ -24,17 +27,40 @@ void Bus::connectCartridge(std::shared_ptr<Cartridge> cart) {
 }
 
 uint8_t Bus::read(uint16_t address) {
-    if (address < 0x2000)
-        return ram[address % 0x0800];
+    Logger logger("read_address");
 
-    if (address >= 0x8000 && cartridge)
+    if (address < 0x2000) {
+        return ram[address & 0x07FF];
+    } else if (address < 0x4000) {
+        uint16_t reg = address & 0x2007;
+        switch (reg) {
+            case 0x2002:
+                return ppu->readStatus();
+            case 0x2004:
+                printf("\n\n $%04X\n", address);
+                system("pause");
+                return 0x0;
+            case 0x2007:
+                printf("\n\n $%04X\n", address);
+
+                system("pause");
+                return 0x0;
+            default:
+                logger.log("Leitura de registrador PPU não implementado: 0x" +
+                           utils::toHexString(reg));
+                return 0;
+        }
+    } else if (address < 0x4020) {
+        logger.log("Leitura de IO register não implementada: 0x" +
+                   utils::toHexString(address));
+        return 0;
+    } else if (address >= 0x8000 && cartridge) {
         return cartridge->readPRG(address);
-
-    if (address >= ppu->registers.STATUS) {
-        return ppu->readStatus();
     }
 
-    return 0x00;
+    logger.log("Leitura de endereço não mapeado: 0x" +
+               utils::toHexString(address));
+    return 0;
 }
 
 void Bus::write(uint16_t address, uint8_t value) {
