@@ -23,6 +23,7 @@ JITCompiler::JITCompiler(size_t bufferSize) {
     opcodeTable[0x24] = &Instructions::handleZeroPageBIT;
     opcodeTable[0x09] = &Instructions::handleORA;
     opcodeTable[0x99] = &Instructions::handleAbsoluteYSTA;
+    opcodeTable[0x38] = &Instructions::handleSEC;
     opcodeTable[0x4C] = &Instructions::handleAbsoluteJMP;
     opcodeTable[0xEE] = &Instructions::handleAbsoluteINC;
     opcodeTable[0x95] = &Instructions::handleZeroPageXSTA;

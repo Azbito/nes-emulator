@@ -182,15 +182,25 @@ void Instructions::handleIndirectYSTA(CPU6502 &cpu, Bus &bus) {
 }
 
 void Instructions::handleRelBCC(CPU6502 &cpu, Bus &bus) {
-    int8_t offset = fetchImmediate(cpu, bus);
+    int8_t offset = static_cast<int8_t>(bus.read(cpu.getPC() + 1));
 
-    if (!cpu.getFlag(cpu.FLAG_CARRY)) {
-        cpu.setCycles(cpu.getCycles() + 1);
+    cpu.setPC(cpu.getPC() + 2);
+
+    bool carrySet = cpu.isFlagSet(CPU6502::FLAG_CARRY);
+
+    if (!carrySet) {
+        uint16_t oldPC = cpu.getPC();
         cpu.setPC(cpu.getPC() + offset);
-        return;
-    }
+        cpu.setCycles(cpu.getCycles() + 1);
 
-    cpu.setCycles(cpu.getCycles() + 2);
+        if ((oldPC & 0xFF00) != (cpu.getPC() & 0xFF00)) {
+            cpu.setCycles(cpu.getCycles() + 1);
+        }
+
+        printf("BCC: Fazendo branch!\n");
+    } else {
+        printf("BCC: NÃO fazendo branch (correto)\n");
+    }
 }
 
 void Instructions::handleRTS(CPU6502 &cpu, Bus &bus) {
@@ -430,6 +440,12 @@ void Instructions::handleTYA(CPU6502 &cpu, Bus &bus) {
 
     cpu.setCycles(cpu.getCycles() + 2);
 
+    cpu.setPC(cpu.getPC() + 1);
+}
+
+void Instructions::handleSEC(CPU6502 &cpu, Bus &bus) {
+    cpu.setFlag(cpu.FLAG_CARRY, true);
+    cpu.setCycles(cpu.getCycles() + 2);
     cpu.setPC(cpu.getPC() + 1);
 }
 

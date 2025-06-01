@@ -30,6 +30,7 @@ public:
     void handleLDYAbsoluteX(CPU6502 &cpu, Bus &bus);
     void handleAbsoluteSTY(CPU6502 &cpu, Bus &bus);
     void handleASLAbsoluteX(CPU6502 &cpu, Bus &bus);
+    void handleSEC(CPU6502 &cpu, Bus &bus);
     void handleNOPIMM(CPU6502 &cpu, Bus &bus);
     void handleZeroPageLDA(CPU6502 &cpu, Bus &bus);
     void handleImmediateLDX(CPU6502 &cpu, Bus &bus);

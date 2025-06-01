@@ -17,7 +17,7 @@
 std::vector<uint8_t> loadROM(const std::string& filename) {
     std::ifstream file(filename, std::ios::binary);
     if (!file)
-        throw std::runtime_error("Não foi possível abrir a ROM!");
+        throw std::runtime_error("It couldn't open the ROM file.");
 
     return std::vector<uint8_t>((std::istreambuf_iterator<char>(file)),
                                 std::istreambuf_iterator<char>());
@@ -46,7 +46,7 @@ int main() {
     jit.connectBus(&bus);
 
     cpu.reset();
-
+    
     GameWindow window(&ppu, &cpu, &jit, &bus);
 
     if (window.Construct(256, 240, 2, 2))

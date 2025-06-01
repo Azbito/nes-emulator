@@ -37,7 +37,6 @@ public:
 
         if (GetKey(olc::Key::S).bPressed && isPaused) {
             isStepping = true;
-            printf("OPCODE: %02X\n", bus->read(cpu->getPC()));
         }
 
         if (isPaused && isStepping) {
