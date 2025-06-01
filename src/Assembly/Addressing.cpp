@@ -19,7 +19,7 @@ uint16_t Instructions::fetchWord(CPU6502 &cpu, Bus &bus) {
 }
 
 uint8_t Instructions::fetchZeroPage(CPU6502 &cpu, Bus &bus) {
-    return bus.read(bus.read(cpu.getPC() + 1));
+    return bus.read(cpu.getPC() + 1);
 }
 
 uint8_t Instructions::fetchZeroPageX(CPU6502 &cpu, Bus &bus) {

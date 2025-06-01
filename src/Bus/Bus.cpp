@@ -37,12 +37,8 @@ uint8_t Bus::read(uint16_t address) {
             case 0x2002:
                 return ppu->readStatus();
             case 0x2004:
-                printf("\n\n $%04X\n", address);
-                system("pause");
                 return 0x0;
             case 0x2007:
-                printf("\n\n $%04X\n", address);
-
                 system("pause");
                 return 0x0;
             default:
@@ -64,6 +60,11 @@ uint8_t Bus::read(uint16_t address) {
 }
 
 void Bus::write(uint16_t address, uint8_t value) {
+    if (address < 0x2000) {
+        ram[address & 0x07FF] = value;
+        return;
+    }
+
     if (address >= 0x8000 && cartridge) {
         cartridge->writePRG(address, value);
         return;

@@ -12,6 +12,7 @@ class Instructions {
 public:
     std::string getOpcodeName(uint8_t opcode);
 
+    void handleRelBVS(CPU6502 &cpu, Bus &bus);
     void handleSEP(CPU6502 &cpu, Bus &bus);
     void handleSTAAbsolute(CPU6502 &cpu, Bus &bus);
     void handleDECAbsolute(CPU6502 &cpu, Bus &bus);

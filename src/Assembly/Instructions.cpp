@@ -186,7 +186,7 @@ void Instructions::handleRelBCC(CPU6502 &cpu, Bus &bus) {
 
     cpu.setPC(cpu.getPC() + 2);
 
-    bool carrySet = cpu.isFlagSet(CPU6502::FLAG_CARRY);
+    bool carrySet = cpu.isFlagSet(cpu.FLAG_CARRY);
 
     if (!carrySet) {
         uint16_t oldPC = cpu.getPC();
@@ -196,10 +196,23 @@ void Instructions::handleRelBCC(CPU6502 &cpu, Bus &bus) {
         if ((oldPC & 0xFF00) != (cpu.getPC() & 0xFF00)) {
             cpu.setCycles(cpu.getCycles() + 1);
         }
+    }
+}
 
-        printf("BCC: Fazendo branch!\n");
-    } else {
-        printf("BCC: NÃO fazendo branch (correto)\n");
+void Instructions::handleRelBVS(CPU6502 &cpu, Bus &bus) {
+    int8_t offset = static_cast<int8_t>(bus.read(cpu.getPC() + 1));
+    cpu.setPC(cpu.getPC() + 2);
+
+    bool overflowSet = cpu.isFlagSet(cpu.FLAG_OVERFLOW);
+
+    if (overflowSet) {
+        uint16_t oldPC = cpu.getPC();
+        cpu.setPC(cpu.getPC() + offset);
+        cpu.setCycles(cpu.getCycles() + 1);
+
+        if ((oldPC & 0xFF00) != (cpu.getPC() & 0xFF00)) {
+            cpu.setCycles(cpu.getCycles() + 1);
+        }
     }
 }
 
@@ -643,10 +656,9 @@ void Instructions::handleZeroPageBIT(CPU6502 &cpu, Bus &bus) {
     uint8_t address = fetchZeroPage(cpu, bus);
     uint8_t value = bus.read(address);
 
-    cpu.setFlag(cpu.FLAG_ZERO, (cpu.getA() & value) == 0);
-
-    cpu.setFlag(cpu.FLAG_OVERFLOW, value & cpu.FLAG_OVERFLOW);
-    cpu.setFlag(cpu.FLAG_NEGATIVE, value & cpu.FLAG_NEGATIVE);
+    cpu.setFlag(CPU6502::FLAG_ZERO, (cpu.getA() & value) == 0);
+    cpu.setFlag(CPU6502::FLAG_OVERFLOW, (value & CPU6502::FLAG_OVERFLOW) != 0);
+    cpu.setFlag(CPU6502::FLAG_NEGATIVE, (value & CPU6502::FLAG_NEGATIVE) != 0);
 
     cpu.setCycles(cpu.getCycles() + 3);
     cpu.setPC(cpu.getPC() + 2);

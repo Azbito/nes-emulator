@@ -51,6 +51,7 @@ JITCompiler::JITCompiler(size_t bufferSize) {
     opcodeTable[0x60] = &Instructions::handleRTS;
     opcodeTable[0xC0] = &Instructions::handleImmCPY;
     opcodeTable[0x90] = &Instructions::handleRelBCC;
+    opcodeTable[0x70] = &Instructions::handleRelBVS;
     opcodeTable[0x91] = &Instructions::handleIndirectYSTA;
     opcodeTable[0x88] = &Instructions::handleDEY;
     opcodeTable[0xE0] = &Instructions::handleImmCPX;
@@ -102,6 +103,12 @@ void JITCompiler::compileOpcode(uint8_t opcode, CPU6502 &cpu) {
     static std::set<uint8_t> recordedOpcodes;
 
     if (opcodeTable[opcode]) {
+        printf("%04X  %02X %02X %02X                        A:%02X X:%02X "
+               "Y:%02X P:%02X SP:%02X\n",
+               cpu.getPC(), opcode, cpu.readMemory(cpu.getPC() + 1),
+               cpu.readMemory(cpu.getPC() + 2), cpu.getA(), cpu.getX(),
+               cpu.getY(), cpu.getP(), cpu.getSP());
+
         (asm_instructions->*opcodeTable[opcode])(cpu, *bus);
 
 #if LOGS
