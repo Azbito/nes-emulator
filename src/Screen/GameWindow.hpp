@@ -81,9 +81,9 @@ private:
     }
 
     void RunEmulationFrame() {
-        if (cpu->getCycles() == 0) {
+        // if (cpu->getCycles() == 0) {
             cpu->step(*jit);
-        }
+        // }
 
         cpu->clock(*jit);
         ppu->clock();

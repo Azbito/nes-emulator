@@ -1,4 +1,4 @@
-#ifndef UTILS_HPP
+#ifndef UTILS_HPP //#pragma once
 #define UTILS_HPP
 
 #include <string>
@@ -16,10 +16,10 @@ inline std::string hexToString(uint32_t n, uint8_t d) {
     return "0x" + s;
 }
 
-inline std::string toHexString(int value) {
-    char buffer[10];
-    snprintf(buffer, sizeof(buffer), "%02X", value);
-    return std::string(buffer);
+inline std::string toHexString(uint16_t value, int width) {
+    std::stringstream ss;
+    ss << std::uppercase << std::hex << std::setfill('0') << std::setw(width) << (int)value;
+    return ss.str();
 }
 
 inline std::string toFlagString(uint8_t flags) {

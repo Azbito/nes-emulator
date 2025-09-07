@@ -636,6 +636,23 @@ void Instructions::handleORA(CPU6502 &cpu, Bus &bus) {
     cpu.setPC(cpu.getPC() + 2);
 }
 
+
+void Instructions::handleORAIndirectY(CPU6502 &cpu, Bus &bus) {
+    uint8_t val = fetchIndirectIndexedY(cpu, bus);
+    cpu.setA(cpu.getA() | val);
+    cpu.updateZNFlags(cpu.getA());
+    cpu.setCycles(cpu.getCycles() + 6);
+    cpu.setPC(cpu.getPC() + 2);
+}
+
+void Instructions::handleORAZeroPageX(CPU6502 &cpu, Bus &bus) {
+    uint8_t val = fetchZeroPageX(cpu, bus);
+    cpu.setA(cpu.getA() | val);
+    cpu.updateZNFlags(cpu.getA());
+    cpu.setCycles(cpu.getCycles() + 4);
+    cpu.setPC(cpu.getPC() + 2);
+}
+
 void Instructions::handleINX(CPU6502 &cpu, Bus &bus) {
     cpu.setX(cpu.getX() + 1);
     cpu.updateZNFlags(cpu.getX());
@@ -678,6 +695,21 @@ void Instructions::handleZeroPageXSTA(CPU6502 &cpu, Bus &bus) {
     bus.write(addr, cpu.getA());
     cpu.setCycles(cpu.getCycles() + 3);
     cpu.setPC(cpu.getPC() + 2);
+}
+
+void Instructions::handleRelBVC(CPU6502 &cpu, Bus &bus) {
+    int8_t offset = fetchRelative(cpu, bus);
+    cpu.setPC(cpu.getPC() + 2);
+
+    if (!(cpu.isFlagSet(CPU6502::FLAG_OVERFLOW))) {
+        uint16_t oldPC = cpu.getPC();
+        cpu.setPC(oldPC + offset);
+
+        cpu.setCycles(cpu.getCycles() + 1);
+        if ((oldPC & 0xFF00) != (cpu.getPC() & 0xFF00)) {
+            cpu.setCycles(cpu.getCycles() + 1);
+        }
+    }
 }
 
 void Instructions::handleJSR(CPU6502 &cpu, Bus &bus) {
@@ -837,6 +869,35 @@ void Instructions::handleNOPAbsoluteX(CPU6502 &cpu, Bus &bus) {
     cpu.setPC(cpu.getPC() + 3);
 }
 
+void Instructions::handleORAAbsolute(CPU6502 &cpu, Bus &bus) {
+    uint16_t addr = fetchAbsoluteAddress(cpu, bus);
+    uint8_t value = bus.read(addr);
+
+    cpu.setA(cpu.getA() | value);
+
+    cpu.setFlag(CPU6502::FLAG_ZERO, cpu.getA() == 0);
+    cpu.setFlag(CPU6502::FLAG_NEGATIVE, cpu.getA() & 0x80);
+
+    cpu.setCycles(cpu.getCycles() + 4);
+    cpu.setPC(cpu.getPC() + 3);
+}
+
+void Instructions::handleASLAbsolute(CPU6502 &cpu, Bus &bus) {
+    uint16_t addr = fetchAbsoluteAddress(cpu, bus);
+    uint8_t value = bus.read(addr);
+
+    cpu.setFlag(CPU6502::FLAG_CARRY, value & 0x80);
+    value <<= 1;
+
+    cpu.setFlag(CPU6502::FLAG_NEGATIVE, value & 0x80);
+    cpu.setFlag(CPU6502::FLAG_ZERO, value == 0);
+
+    bus.write(addr, value);
+
+    cpu.setCycles(cpu.getCycles() + 6);
+    cpu.setPC(cpu.getPC() + 3);
+}
+
 void Instructions::handleASLAbsoluteX(CPU6502 &cpu, Bus &bus) {
     uint16_t addr = fetchAbsoluteAddress(cpu, bus) + cpu.getX();
     uint8_t value = bus.read(addr);
@@ -895,6 +956,32 @@ void Instructions::handleLDXImmediate(CPU6502 &cpu, Bus &bus) {
     cpu.setCycles(cpu.getCycles() + 2);
     cpu.setPC(cpu.getPC() + 2);
 }
+
+void Instructions::handlePHP(CPU6502 &cpu, Bus &bus) {
+    uint8_t status = cpu.getP();
+    status |= 0x30;
+
+    cpu.pushToStack(status);
+
+    cpu.setCycles(cpu.getCycles() + 3);
+}
+
+void Instructions::handleASLZP(CPU6502 &cpu, Bus &bus) {
+    uint16_t addr = fetchZeroPage(cpu, bus);
+    uint8_t value = bus.read(addr);
+
+    cpu.setFlag(CPU6502::FLAG_CARRY, value & 0x80);
+
+    value <<= 1;
+
+    cpu.setFlag(CPU6502::FLAG_ZERO, value == 0);
+    cpu.setFlag(CPU6502::FLAG_NEGATIVE, value & 0x80);
+
+    bus.write(addr, value);
+
+    cpu.setCycles(cpu.getCycles() + 5);
+}
+
 
 void Instructions::handleORAZeroPage(CPU6502 &cpu, Bus &bus) {
     uint8_t value = fetchZeroPage(cpu, bus);

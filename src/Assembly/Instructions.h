@@ -12,6 +12,13 @@ class Instructions {
 public:
     std::string getOpcodeName(uint8_t opcode);
 
+    void handleORAZeroPageX(CPU6502 &cpu, Bus &bus);
+    void handleORAIndirectY(CPU6502 &cpu, Bus &bus);
+    void handleASLAbsolute(CPU6502 &cpu, Bus &bus);
+    void handleORAAbsolute(CPU6502 &cpu, Bus &bus);
+    void handlePHP(CPU6502 &cpu, Bus &bus);
+    void handleASLZP(CPU6502 &cpu, Bus &bus);
+    void handleRelBVC(CPU6502 &cpu, Bus &bus);
     void handleRelBVS(CPU6502 &cpu, Bus &bus);
     void handleSEP(CPU6502 &cpu, Bus &bus);
     void handleSTAAbsolute(CPU6502 &cpu, Bus &bus);

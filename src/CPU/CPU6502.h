@@ -39,24 +39,31 @@ public:
     inline uint8_t getA() const {
         return m_A;
     }
+
     inline uint8_t getX() const {
         return m_X;
     }
+
     inline uint8_t getY() const {
         return m_Y;
     }
+
     inline uint8_t getP() const {
         return m_P;
     }
+
     inline uint8_t getSP() const {
         return m_SP;
     }
+
     inline uint16_t getPC() const {
         return m_PC;
     }
+
     inline uint32_t getCycles() const {
         return m_cycles;
     }
+
     inline uint8_t *getRAM() {
         return m_RAM;
     }
@@ -64,21 +71,35 @@ public:
     inline void setA(uint8_t value) {
         m_A = value;
     }
+
     inline void setX(uint8_t value) {
         m_X = value;
     }
+
     inline void setY(uint8_t value) {
         m_Y = value;
     }
+
     inline void setP(uint8_t value) {
         m_P = value;
     }
+
     inline void setSP(uint8_t value) {
         m_SP = value;
     }
+
     inline void setPC(uint16_t value) {
         m_PC = value;
     }
+
+    inline void addOrRemovePC(uint16_t value) {
+        m_PC += value;
+    }
+
+    inline void addOrRemoveCycles(uint32_t value) {
+        m_cycles += value;
+    }
+
     inline void setCycles(uint32_t value) {
         m_cycles = value;
     }

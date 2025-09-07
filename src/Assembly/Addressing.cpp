@@ -73,3 +73,4 @@ uint16_t Instructions::fetchAbsoluteAddress(CPU6502 &cpu, Bus &bus) {
     return static_cast<uint16_t>(bus.read(cpu.getPC() + 1)) |
            (static_cast<uint16_t>(bus.read(cpu.getPC() + 2)) << 8);
 }
+
