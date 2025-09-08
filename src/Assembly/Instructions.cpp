@@ -696,21 +696,27 @@ void Instructions::handleZeroPageXSTA(CPU6502 &cpu, Bus &bus) {
     cpu.setCycles(cpu.getCycles() + 3);
     cpu.setPC(cpu.getPC() + 2);
 }
-
 void Instructions::handleRelBVC(CPU6502 &cpu, Bus &bus) {
-    int8_t offset = fetchRelative(cpu, bus);
-    cpu.setPC(cpu.getPC() + 2);
+    uint16_t pc = cpu.getPC();
 
-    if (!(cpu.isFlagSet(CPU6502::FLAG_OVERFLOW))) {
-        uint16_t oldPC = cpu.getPC();
-        cpu.setPC(oldPC + offset);
+    uint8_t rawOffset = bus.read(pc + 1);
+    int8_t offset = static_cast<int8_t>(rawOffset); // converte para signed
+
+    cpu.setPC(pc + 2);
+
+    if (!cpu.isFlagSet(CPU6502::FLAG_OVERFLOW)) {
+        uint16_t newPC = cpu.getPC() + offset;
 
         cpu.setCycles(cpu.getCycles() + 1);
-        if ((oldPC & 0xFF00) != (cpu.getPC() & 0xFF00)) {
+
+        if ((cpu.getPC() & 0xFF00) != (newPC & 0xFF00)) {
             cpu.setCycles(cpu.getCycles() + 1);
         }
+
+        cpu.setPC(newPC);
     }
 }
+
 
 void Instructions::handleJSR(CPU6502 &cpu, Bus &bus) {
     uint16_t pc = cpu.getPC();
@@ -964,6 +970,7 @@ void Instructions::handlePHP(CPU6502 &cpu, Bus &bus) {
     cpu.pushToStack(status);
 
     cpu.setCycles(cpu.getCycles() + 3);
+    cpu.setPC(cpu.getPC() + 1);
 }
 
 void Instructions::handleASLZP(CPU6502 &cpu, Bus &bus) {

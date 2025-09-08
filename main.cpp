@@ -47,10 +47,13 @@ int main() {
 
     cpu.reset();
     
-    GameWindow window(&ppu, &cpu, &jit, &bus);
-
-    if (window.Construct(256, 240, 2, 2))
-        window.Start();
+    // GameWindow window(&ppu, &cpu, &jit, &bus);
+    //
+    // if (window.Create())
+    //     window.Run();
+    while (true) {
+        cpu.step(jit);
+    }
 
     return 0;
 }
