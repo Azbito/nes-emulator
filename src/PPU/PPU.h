@@ -1,107 +1,58 @@
 #pragma once
-
-#include <array>
 #include <cstdint>
 #include <memory>
-
 #include "Cartridge/Cartridge.h"
 #include "Libraries/olcPixelGameEngine.h"
-#include "config.h"
 
 class Bus;
 class Cartridge;
 
 class PPU {
 public:
-    struct Registers {
-        // 0x2000
-        uint16_t CTRL = 0x2000;
-        // 0x2001
-        uint16_t MASK = 0x2001;
-        // 0x2002
-        uint16_t STATUS = 0x2002;
-        // 0x2003
-        uint16_t OAMADDR = 0x2003;
-        // 0x2004
-        uint16_t OAMDATA = 0x2004;
-        // 0x2005
-        uint16_t SCROLL = 0x2005;
-        // 0x2006
-        uint16_t ADDR = 0x2006;
-        // 0x2007
-        uint16_t DATA = 0x2007;
-    };
+    PPU();
 
-    enum Status : uint8_t {
-        PPU_OPEN_BUS = (1 << 5) - 1,  // 2C05
-        SPRITE_OVERFLOW = 1 << 5,
-        SPRITE_ZERO_HIT = 1 << 6,
-        VBLANK_STARTED = 1 << 7  //! unreliable, use NMI instead
-    };
-
-    struct OAMEntry {
-        uint8_t y;
-        uint8_t x;
-        uint8_t tile;
-        uint8_t attr;
-    };
-
-    Registers registers;
-
-    void connectCartridge(std::shared_ptr<Cartridge> cart);
     void connectBus(Bus *b);
-    void clock();
+    void connectCartridge(std::shared_ptr<Cartridge> cart);
 
-    void checkSpriteOverflow();
-    void checkSpriteZeroHit();
-
-    void writeCTRL(uint8_t value);
-    void writeScroll(uint8_t value);
-    void writeAddr(uint8_t value);
-    void setVerticalBlank();
-
-    bool isNMIEnabled();
-    bool isSpriteOnCurrentLine(int index);
-    bool isSpriteZeroVisible();
-    bool isSpriteZeroCollidingWithBackground();
-    bool isSpriteOverlappingBackground(uint8_t spriteX, uint8_t spriteY);
-    bool isRenderingLine();
-
+    // Leitura/Escrita PPU
     uint8_t readStatus();
+    uint8_t readData();
+    void writeCtrl(uint8_t val);
+    void writeMask(uint8_t value);
+    void writeOAMAddr(uint8_t value);
+    void writeOAMData(uint8_t value);
+    void writeOAMDMA(uint8_t page);
+    void writeScroll(uint8_t val);
+    void writeAddr(uint8_t val);
+    void writeData(uint8_t val);
+    uint8_t readOAMData();
 
+    // Renderização
+    void renderNametable(olc::PixelGameEngine* screen);
+    void renderAllTilesToBuffer(uint32_t* buffer, int width, int height);
+    void drawTileToBuffer(uint8_t tileIndex, int x, int y,
+                               uint32_t* buffer, int width, int height,
+                               uint8_t attr);
+    void renderSprites(uint32_t* buffer, int width, int height);
+    void renderNametableToBuffer(uint32_t* buffer, int width, int height);
 private:
-    std::shared_ptr<Cartridge> cartridge;
-    Bus *bus = nullptr;
+    Bus *m_bus = nullptr;
+    std::shared_ptr<Cartridge> m_cartridge;
 
-    static const int OAM_SIZE = 64;
-    OAMEntry m_oam[OAM_SIZE];
+    // Registradores e buffers
+    uint16_t m_v = 0;      // endereço VRAM corrente
+    uint8_t m_buffer = 0;  // buffer de leitura da VRAM
+    uint8_t m_latch = 0;   // latch para $2005/$2006
 
-    uint8_t m_bgXStart, m_bgYStart, m_bgXEnd, m_bgYEnd;
-
-    //* $2000 - CTRL
-    Registers m_registers;
-    uint8_t m_ctrl;
-    uint16_t m_nametableBase;
-    uint8_t m_vramIncrementValue;
-    uint16_t m_spriteTableAddr;
-    uint16_t m_bgTableAddr;
-    uint8_t m_spriteSize;
-    bool m_ppuMasterSlave;
-    bool m_nmiEnabled;
-
-    bool m_nmiOutput = false;  //* 7th bit
-
-    //* $2002 - STATUS
-    uint8_t m_status = 0x00;
-    int m_scanline = 0;
-
-    //* $2005 - SCROLL & $2006 - ADDR
+    uint8_t m_ctrl = 0;
+    uint8_t m_mask = 0;
+    uint8_t m_status = 0;
+    uint8_t m_oamAddr = 0;
     uint8_t m_scrollX = 0;
     uint8_t m_scrollY = 0;
-    uint16_t m_t = 0;
-    uint16_t m_v = 0;
-    uint8_t m_w = 0;
+    uint8_t m_oamData[256]{};
+    uint8_t m_vram[0x800]{}; // 2KB VRAM interna
 
-    bool m_nmiOccurred = false;
-    uint8_t m_openBus = 0;
+    void drawTile(uint8_t tileIndex, int x, int y, olc::PixelGameEngine* screen);
+    uint16_t mirrorAddress(uint16_t addr);
 };

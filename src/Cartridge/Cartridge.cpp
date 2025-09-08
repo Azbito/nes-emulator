@@ -11,7 +11,8 @@ Cartridge::Cartridge(const std::vector<uint8_t> &romData) {
     uint8_t chrRomChunks = romData[5];
 
     uint8_t flags6 = romData[6];
-    bool verticalMirroring = false;
+    const int HORIZONTAL_FLAG = 0;
+    m_horizontalMirror = (flags6 & 0x01) == HORIZONTAL_FLAG;
 
     size_t prgRomSize = prgRomChunks * 0x4000;
     size_t chrRomSize = chrRomChunks * 0x2000;

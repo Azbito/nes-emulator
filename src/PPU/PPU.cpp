@@ -1,167 +1,208 @@
-#include "PPU/PPU.h"
-
-#include <iostream>
-
+#include "PPU.h"
 #include "Bus/Bus.h"
+#include <cstring>
 
-void PPU::connectCartridge(std::shared_ptr<Cartridge> cart) {
-    cartridge = cart;
+PPU::PPU() {
+    std::memset(m_vram, 0, sizeof(m_vram));
+    std::memset(m_oamData, 0, sizeof(m_oamData));
 }
 
-void PPU::connectBus(Bus *b) {
-    bus = b;
-}
-
-void PPU::writeCTRL(uint8_t value) {
-    m_registers.CTRL = value;
-    m_ctrl = value;
-    m_openBus = value;
-
-    uint8_t nametable = m_ctrl & 0x03;
-
-    switch (nametable) {
-        case 0x00:
-            m_nametableBase = 0x2000;
-            break;
-        case 0x01:
-            m_nametableBase = 0x2400;
-            break;
-        case 0x02:
-            m_nametableBase = 0x2800;
-            break;
-        case 0x03:
-            m_nametableBase = 0x2C00;
-            break;
-    }
-
-    m_vramIncrementValue = (m_ctrl & 0x04) != 0 ? 32 : 1;
-    m_spriteTableAddr = (m_ctrl & 0x08) != 0 ? 0x1000 : 0x0000;
-    m_bgTableAddr = (m_ctrl & 0x10) != 0 ? 0x1000 : 0x0000;
-    m_spriteSize = (m_ctrl & 0x20) != 0 ? 16 : 8;
-    m_ppuMasterSlave = (m_ctrl & 0x40) != 0;
-    m_nmiEnabled = (m_ctrl & 0x80) != 0;
-
-    if (m_nmiEnabled) {
-        m_nmiOutput = true;
-    }
-}
+void PPU::connectBus(Bus *b) { m_bus = b; }
+void PPU::connectCartridge(std::shared_ptr<Cartridge> cart) { m_cartridge = cart; }
 
 uint8_t PPU::readStatus() {
-    uint8_t status = 0;
-
-    if (m_status & Status::VBLANK_STARTED) {
-        status |= Status::VBLANK_STARTED;
-    }
-
-    if (m_status & Status::SPRITE_OVERFLOW) {
-        status |= Status::SPRITE_OVERFLOW;
-    }
-
-    if (m_status & Status::SPRITE_ZERO_HIT) {
-        status |= Status::SPRITE_ZERO_HIT;
-    }
-
-    status |= (m_openBus & ((1 << 5) - 1));
-
-    m_status &= ~Status::VBLANK_STARTED;
-
-    m_openBus = status;
-
-    return status;
+    uint8_t ret = m_status;
+    m_status &= 0x7F;
+    m_latch = 0;
+    return ret;
 }
 
-void PPU::clock() {
-    if (m_scanline < 240) {
-        if (m_scanline >= 0 && m_scanline <= 239) {
-            checkSpriteOverflow();
-            checkSpriteZeroHit();
-        }
-    } else if (m_scanline == 241) {
-        setVerticalBlank();
-    }
+uint8_t PPU::readData() {
+    uint16_t addr = mirrorAddress(m_v);
+    uint8_t val = m_buffer;
 
-    if (m_scanline == 261) {
-        m_scanline = 0;
+    if (addr < 0x2000 && m_cartridge) {
+        m_buffer = m_cartridge->getCHRROM()[addr];
     } else {
-        m_scanline++;
+        m_buffer = m_vram[addr & 0x7FF];
     }
+
+    m_v += (m_ctrl & 0x04) ? 32 : 1;
+    return val;
 }
 
-bool PPU::isRenderingLine() {
-    return (m_scanline >= 0 && m_scanline < 240);
-};
+uint8_t PPU::readOAMData() {
+    return m_oamData[m_oamAddr];
+}
 
-void PPU::checkSpriteOverflow() {
-    int spriteCount = 0;
+void PPU::writeCtrl(uint8_t val) { m_ctrl = val; }
+void PPU::writeMask(uint8_t val) { m_mask = val; }
+void PPU::writeOAMAddr(uint8_t val) { m_oamAddr = val; }
+void PPU::writeOAMData(uint8_t val) {
+    m_oamData[m_oamAddr] = val;
+    m_oamAddr++;
+}
 
-    for (int i = 0; i < OAM_SIZE; i++) {
-        if (isSpriteOnCurrentLine(i)) {
-            spriteCount++;
+void PPU::writeOAMDMA(uint8_t page) {
+    if (!m_bus) return;
+
+    uint16_t baseAddr = page << 8;
+    for (int i = 0; i < 256; i++) {
+        m_oamData[i] = m_bus->read(baseAddr + i);
+    }
+
+    m_oamAddr = 0;
+}
+
+void PPU::writeScroll(uint8_t val) {
+    if (m_latch == 0) { m_scrollX = val; m_latch = 1; }
+    else { m_scrollY = val; m_latch = 0; }
+}
+
+void PPU::writeAddr(uint8_t val) {
+    if (m_latch == 0) { m_v = (val & 0x3F) << 8; m_latch = 1; }
+    else { m_v = (m_v & 0xFF00) | val; m_latch = 0; }
+}
+
+void PPU::writeData(uint8_t val) {
+    uint16_t addr = mirrorAddress(m_v);
+    printf("%04X\n", addr);
+    if (addr >= 0x2000 && addr <= 0x2FFF) {
+        m_vram[addr & 0x7FF] = val;
+    }
+    m_v += (m_ctrl & 0x04) ? 32 : 1;
+}
+
+uint16_t PPU::mirrorAddress(uint16_t addr) {
+    if (addr >= 0x2000 && addr <= 0x2FFF) return addr & 0x0FFF;
+    return addr;
+}
+
+void PPU::drawTile(uint8_t tileIndex, int x, int y, olc::PixelGameEngine* screen) {
+    if (!m_cartridge) return;
+    const auto &chr = m_cartridge->getCHRROM();
+    if (chr.empty()) return;
+
+    uint16_t offset = tileIndex * 16;
+    for (int row = 0; row < 8; row++) {
+        uint8_t p0 = chr[offset + row];
+        uint8_t p1 = chr[offset + row + 8];
+
+        for (int col = 0; col < 8; col++) {
+            uint8_t bit0 = (p0 >> (7 - col)) & 1;
+            uint8_t bit1 = (p1 >> (7 - col)) & 1;
+            uint8_t colorIdx = (bit1 << 1) | bit0;
+
+            olc::Pixel color = olc::BLACK;
+            if (colorIdx == 1) color = olc::DARK_GREY;
+            else if (colorIdx == 2) color = olc::GREY;
+            else if (colorIdx == 3) color = olc::WHITE;
+
+            screen->Draw(x + col, y + row, color);
         }
+    }
+}
 
-        if (spriteCount > 8) {
-            m_status |= Status::SPRITE_OVERFLOW;
-            break;
+void PPU::renderNametable(olc::PixelGameEngine* screen) {
+    for (int row = 0; row < 30; row++) {
+        for (int col = 0; col < 32; col++) {
+            uint16_t addr = 0x2000 + row * 32 + col;
+            uint8_t tileIndex = m_vram[addr & 0x7FF];
+            if (tileIndex != 0) drawTile(tileIndex, col * 8, row * 8, screen);
         }
     }
 }
 
-void PPU::checkSpriteZeroHit() {
-    if (isSpriteZeroVisible() && isSpriteZeroCollidingWithBackground()) {
-        m_status |= Status::SPRITE_ZERO_HIT;
+void PPU::renderNametableToBuffer(uint32_t* buffer, int width, int height) {
+    if (!m_cartridge) return;
+
+    // percorre 30 linhas x 32 colunas = 960 tiles
+    for (int row = 0; row < 30; row++) {
+        for (int col = 0; col < 32; col++) {
+            uint16_t addr = 0x2000 + row * 32 + col;
+            uint8_t tileIndex = m_vram[addr & 0x7FF];
+
+            // desenha cada tile na posição certa
+            drawTileToBuffer(tileIndex, col * 8, row * 8,
+                             buffer, width, height, 0);
+        }
     }
 }
 
-bool PPU::isSpriteOnCurrentLine(int index) {
-    uint8_t spriteY = m_oam[index].y;
-    return (spriteY >= m_scanline && spriteY < (m_scanline + 8));
-}
+void PPU::renderAllTilesToBuffer(uint32_t* buffer, int width, int height) {
+    if (!m_cartridge) return;
+    const auto &chrROM = m_cartridge->getCHRROM();
+    if (chrROM.empty()) return;
 
-bool PPU::isSpriteZeroVisible() {
-    return isSpriteOnCurrentLine(0);
-}
+    uint32_t palette[4] = {0xFF000000, 0xFFFFFFFF, 0xFFAAAAAA, 0xFF555555};
+    int tilesPerRow = width / 8;
+    int totalTiles = chrROM.size() / 16;
 
-bool PPU::isSpriteZeroCollidingWithBackground() {
-    uint8_t spriteZeroX = m_oam[0].x;
-    uint8_t spriteZeroY = m_oam[0].y;
+    for (int tileIndex = 0; tileIndex < totalTiles; ++tileIndex) {
+        int tileRow = tileIndex / tilesPerRow;
+        int tileCol = tileIndex % tilesPerRow;
+        uint16_t tileAddr = tileIndex * 16;
 
-    return isSpriteOverlappingBackground(spriteZeroX, spriteZeroY);
-};
+        for (int y = 0; y < 8; ++y) {
+            uint8_t plane0 = chrROM[tileAddr + y];
+            uint8_t plane1 = chrROM[tileAddr + y + 8];
 
-bool PPU::isSpriteOverlappingBackground(uint8_t spriteX, uint8_t spriteY) {
-    return (spriteX >= m_bgXStart && spriteX <= m_bgXEnd &&
-            spriteY >= m_bgYStart && spriteY <= m_bgYEnd);
-};
+            for (int x = 0; x < 8; ++x) {
+                uint8_t bit0 = (plane0 >> (7 - x)) & 1;
+                uint8_t bit1 = (plane1 >> (7 - x)) & 1;
+                uint8_t colorIndex = (bit1 << 1) | bit0;
 
-void PPU::setVerticalBlank() {
-    m_status |= Status::VBLANK_STARTED;
+                int px = tileCol * 8 + x;
+                int py = tileRow * 8 + y;
 
-    if (m_nmiEnabled) {
-        m_nmiOccurred = true;
+                if (px < width && py < height)
+                    buffer[py * width + px] = palette[colorIndex];
+            }
+        }
     }
 }
 
-bool PPU::isNMIEnabled() {
-    return m_nmiEnabled;
-}
+void PPU::renderSprites(uint32_t* buffer, int width, int height) {
+    if (!m_cartridge) return;
+    const auto &chr = m_cartridge->getCHRROM();
+    if (chr.empty()) return;
 
-void PPU::writeScroll(uint8_t value) {
-    if (m_w == 0) {
-        m_scrollX = value;
-        m_w = 1;
-    } else {
-        m_scrollY = value;
-        m_w = 0;
+    for (int i = 0; i < 64; i++) {
+        uint8_t y = m_oamData[i * 4 + 0];
+        uint8_t tileIndex = m_oamData[i * 4 + 1];
+        uint8_t attr = m_oamData[i * 4 + 2];
+        uint8_t x = m_oamData[i * 4 + 3];
+
+        drawTileToBuffer(tileIndex, x, y, buffer, width, height, attr);
     }
 }
 
-void PPU::writeAddr(uint8_t value) {
-    if (m_w == 0) {
-        m_t = (m_t & 0x00FF) | ((uint16_t)value << 8);
-        m_w = 1;
-    } else {
-        m_t = (m_t & 0xFF00) | value;
-        m_v = m_t;
-        m_w = 0;
+void PPU::drawTileToBuffer(uint8_t tileIndex, int x, int y,
+                           uint32_t* buffer, int width, int height,
+                           uint8_t attr) {
+    const auto &chr = m_cartridge->getCHRROM();
+    if (chr.empty()) return;
+
+    uint16_t offset = tileIndex * 16;
+    uint32_t palette[4] = {0x00000000, 0xFFFFFFFF, 0xFFAAAAAA, 0xFF555555};
+
+    for (int row = 0; row < 8; row++) {
+        uint8_t p0 = chr[offset + row];
+        uint8_t p1 = chr[offset + row + 8];
+
+        for (int col = 0; col < 8; col++) {
+            uint8_t bit0 = (p0 >> (7 - col)) & 1;
+            uint8_t bit1 = (p1 >> (7 - col)) & 1;
+            uint8_t colorIdx = (bit1 << 1) | bit0;
+
+            if (colorIdx == 0) continue;
+
+            int px = x + col;
+            int py = y + row;
+            if (px < width && py < height) {
+                buffer[py * width + px] = palette[colorIdx];
+            }
+        }
     }
 }
+

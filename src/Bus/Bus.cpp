@@ -27,35 +27,34 @@ void Bus::connectCartridge(std::shared_ptr<Cartridge> cart) {
 }
 
 uint8_t Bus::read(uint16_t address) {
-    Logger logger("read_address");
-
     if (address < 0x2000) {
         return ram[address & 0x07FF];
-    } else if (address < 0x4000) {
-        uint16_t reg = address & 0x2007;
+    }
+
+    if (address < 0x4000 && ppu) {
+        uint16_t reg = 0x2000 + (address & 0x0007);
         switch (reg) {
-            case 0x2002:
+            case 0x2002: {
                 return ppu->readStatus();
-            case 0x2004:
-                return 0x0;
-            case 0x2007:
-                system("pause");
-                return 0x0;
-            default:
-                logger.log("Leitura de registrador PPU não implementado: 0x" +
-                           utils::toHexString(reg));
-                return 0;
+            };
+            case 0x2004: {
+                return ppu->readOAMData();
+            };
+            case 0x2007: {
+                return ppu->readData();
+            };
+            default: return 0;
         }
-    } else if (address < 0x4020) {
-        logger.log("Leitura de IO register não implementada: 0x" +
-                   utils::toHexString(address));
+    }
+
+    if (address < 0x4020) {
         return 0;
-    } else if (address >= 0x8000 && cartridge) {
+    }
+
+    if (address >= 0x8000 && cartridge) {
         return cartridge->readPRG(address);
     }
 
-    logger.log("Leitura de endereço não mapeado: 0x" +
-               utils::toHexString(address));
     return 0;
 }
 
@@ -65,27 +64,29 @@ void Bus::write(uint16_t address, uint8_t value) {
         return;
     }
 
+
+    if (address < 0x4000 && ppu) {
+        uint16_t reg = 0x2000 + (address & 0x0007);
+
+        switch (reg) {
+            case 0x2000: ppu->writeCtrl(value); break;   // PPUCTRL
+            case 0x2001: ppu->writeMask(value); break;   // PPUMASK
+            case 0x2003: ppu->writeOAMAddr(value); break; // OAMADDR
+            case 0x2004: ppu->writeOAMData(value); break; // OAMDATA
+            case 0x2005: ppu->writeScroll(value); break; // PPUSCROLL (Wx2)
+            case 0x2006: ppu->writeAddr(value); break;   // PPUADDR (Wx2)
+            case 0x2007: ppu->writeData(value); break;   // PPUDATA
+            default: break;
+        }
+        return;
+    }
+
+    if (address == 0x4014 && ppu) {
+        ppu->writeOAMDMA(value);
+        return;
+    }
+
     if (address >= 0x8000 && cartridge) {
         cartridge->writePRG(address, value);
-        return;
-    }
-
-    if (address == ppu->registers.CTRL) {
-        ppu->writeCTRL(value);
-        return;
-    }
-
-    if (address == ppu->registers.MASK) {
-        return;
-    }
-
-    if (address == ppu->registers.SCROLL) {
-        ppu->writeScroll(value);
-        return;
-    }
-
-    if (address == ppu->registers.ADDR) {
-        ppu->writeAddr(value);
-        return;
     }
 }

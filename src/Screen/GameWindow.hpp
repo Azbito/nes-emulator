@@ -1,161 +1,152 @@
 #pragma once
 
-#include <bitset>
-#include <cstdio>
-#include <unordered_map>
-
-#include "Assembly/Instructions.h"
-#include "Bus/Bus.h"
+#include <windows.h>
+#include <vector>
+#include <string>
+#include <thread>
 #include "CPU/CPU6502.h"
 #include "JIT/Compiler.h"
-#include "Libraries/olcPixelGameEngine.h"
+#include "Bus/Bus.h"
 #include "PPU/PPU.h"
-#include "Utils/main.hpp"
-#include "config.h"
 
-class GameWindow : public olc::PixelGameEngine {
+class GameWindow {
 public:
-    GameWindow(PPU *ppu_, CPU6502 *cpu_, JITCompiler *jit_, Bus *bus_)
-        : ppu(ppu_),
-          cpu(cpu_),
-          jit(jit_),
-          bus(bus_),
-          isPaused(true),
-          isStepping(false) {
-        sAppName = "NES Emulator Debug View";
+    GameWindow(PPU* ppu_, CPU6502* cpu_, JITCompiler* jit_, Bus* bus_)
+        : ppu(ppu_), cpu(cpu_), jit(jit_), bus(bus_),
+          isPaused(true), isStepping(false)
+    {
+        screenWidth = 256;
+        screenHeight = 240;
+        framebuffer.resize(screenWidth * screenHeight, 0x00000000);
     }
 
-    bool OnUserCreate() override {
-        isPaused = true;
-        return true;
+    struct Pixel {
+        uint8_t r, g, b, a;
+    };
+
+    [[nodiscard]]
+    bool Create() {
+        WNDCLASS wc = {};
+        wc.lpfnWndProc = WindowProcStatic;
+        wc.hInstance = GetModuleHandle(nullptr);
+        wc.lpszClassName = "NESWindowClass";
+        wc.cbWndExtra = sizeof(GameWindow*);
+
+        if (!RegisterClass(&wc)) return false;
+
+        hwnd = CreateWindowEx(
+            0, "NESWindowClass", "NES Emulator",
+            WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+            CW_USEDEFAULT, CW_USEDEFAULT, screenWidth*2, screenHeight*2,
+            nullptr, nullptr, GetModuleHandle(nullptr), this
+        );
+
+        return hwnd != nullptr;
     }
 
-    bool OnUserUpdate(float fElapsedTime) override {
-#if DEBUG_MODE
-        if (GetKey(olc::Key::P).bPressed)
-            isPaused = !isPaused;
+    void Run() {
+        MSG msg = {};
+        while (true) {
+            while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+                if (msg.message == WM_QUIT) return;
+                TranslateMessage(&msg);
+                DispatchMessage(&msg);
+            }
 
-        if (GetKey(olc::Key::S).bPressed && isPaused) {
-            isStepping = true;
-        }
-
-        if (isPaused && isStepping) {
-            RunSingleInstruction();
-            isPaused = true;
-            isStepping = false;
-        }
-
-        if (!isPaused) {
+            HandleInput();
             RunEmulationFrame();
-        }
-#else
-        RunEmulationFrame();
-#endif
+            DrawScreen();
 
-        DrawScreen();
-        return true;
+            std::this_thread::sleep_for(std::chrono::milliseconds(16)); // ~60fps
+        }
     }
 
 private:
-    PPU *ppu;
-    CPU6502 *cpu;
-    JITCompiler *jit;
-    Bus *bus;
+    HWND hwnd = nullptr;
+    PPU* ppu;
+    CPU6502* cpu;
+    JITCompiler* jit;
+    Bus* bus;
+
+    int screenWidth;
+    int screenHeight;
+    std::vector<uint32_t> framebuffer;
 
     bool isPaused;
     bool isStepping;
 
-    void RunSingleInstruction() {
-        if (cpu->getCycles() == 0) {
-            cpu->step(*jit);
+    // --- Static WindowProc ---
+    static LRESULT CALLBACK WindowProcStatic(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+        if (uMsg == WM_CREATE) {
+            CREATESTRUCT* cs = reinterpret_cast<CREATESTRUCT*>(lParam);
+            SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)cs->lpCreateParams);
+            return 0;
         }
 
+        GameWindow* window = reinterpret_cast<GameWindow*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+        if (window) return window->WindowProc(hwnd, uMsg, wParam, lParam);
+
+        return DefWindowProc(hwnd, uMsg, wParam, lParam);
+    }
+
+    LRESULT WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+        switch (uMsg) {
+        case WM_DESTROY:
+            PostQuitMessage(0);
+            return 0;
+        case WM_PAINT: {
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hwnd, &ps);
+
+            BITMAPINFO bmi = {};
+            bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+            bmi.bmiHeader.biWidth = screenWidth;
+            bmi.bmiHeader.biHeight = -screenHeight; // top-down
+            bmi.bmiHeader.biPlanes = 1;
+            bmi.bmiHeader.biBitCount = 32;
+            bmi.bmiHeader.biCompression = BI_RGB;
+
+            StretchDIBits(hdc,
+                          0, 0, screenWidth, screenHeight,
+                          0, 0, screenWidth, screenHeight,
+                          framebuffer.data(), &bmi, DIB_RGB_COLORS, SRCCOPY);
+
+            EndPaint(hwnd, &ps);
+            return 0;
+        }
+        }
+        return DefWindowProc(hwnd, uMsg, wParam, lParam);
+    }
+
+    void HandleInput() {
+        if (GetAsyncKeyState('P') & 0x8000) isPaused = !isPaused;
+        if (GetAsyncKeyState('S') & 0x8000 && isPaused) isStepping = true;
+    }
+
+    void RunSingleInstruction() {
+        if (cpu->getCycles() == 0) cpu->step(*jit);
         do {
-            if (cpu->getCycles() == 0) {
-                cpu->step(*jit);
-            }
-
+            if (cpu->getCycles() == 0) cpu->step(*jit);
             cpu->clock(*jit);
-
         } while (cpu->getCycles() > 0);
     }
 
     void RunEmulationFrame() {
-        // if (cpu->getCycles() == 0) {
-            cpu->step(*jit);
-        // }
-
+        if (isPaused && !isStepping) return;
+        printf("oi");
+        cpu->step(*jit);
         cpu->clock(*jit);
-        ppu->clock();
+
+        if (isStepping) isStepping = false;
     }
 
     void DrawScreen() {
-        constexpr int ppuWidth = 256;
+        if (!ppu) return;
 
-#if SHOW_INSTRUCTIONS
-        Clear(olc::Pixel(20, 20, 50));
+        std::fill(framebuffer.begin(), framebuffer.end(), 0x00000000);
+        ppu->renderNametableToBuffer(framebuffer.data(), screenWidth, screenHeight);
+        ppu->renderSprites(framebuffer.data(), screenWidth, screenHeight);
 
-        FillRect(ppuWidth, 0, ScreenWidth() - ppuWidth, ScreenHeight(),
-                 olc::DARK_BLUE);
-        DrawRect(ppuWidth - 1, 0, ScreenWidth() - ppuWidth + 2, ScreenHeight(),
-                 olc::WHITE);
-
-        DrawDebugInfo(ppuWidth - 125, 10);
-#else
-        // todo: render frames
-#endif
-    }
-
-    void DrawDebugInfo(int x, int y) {
-        olc::Pixel textColor = olc::WHITE;
-        float scale = 0.5f;
-
-        DrawStringDecal({(float)x, (float)(y + 0)}, "CPU REGISTERS:", textColor,
-                        {scale, scale});
-        DrawStringDecal({(float)x, (float)(y + 10)},
-                        "PC: " + utils::hexToString(cpu->getPC(), 4), textColor,
-                        {scale, scale});
-        DrawStringDecal({(float)x, (float)(y + 20)},
-                        "A:  " + utils::hexToString(cpu->getA(), 2), textColor,
-                        {scale, scale});
-        DrawStringDecal({(float)x, (float)(y + 30)},
-                        "X:  " + utils::hexToString(cpu->getX(), 2), textColor,
-                        {scale, scale});
-        DrawStringDecal({(float)x, (float)(y + 40)},
-                        "Y:  " + utils::hexToString(cpu->getY(), 2), textColor,
-                        {scale, scale});
-        DrawStringDecal({(float)x, (float)(y + 50)},
-                        "SP: " + utils::hexToString(cpu->getSP(), 2), textColor,
-                        {scale, scale});
-
-        uint8_t p = cpu->getP();
-        std::string flags = "";
-        for (int i = 7; i >= 0; i--) {
-            flags += (p & (1 << i)) ? '1' : '0';
-        }
-        DrawStringDecal({(float)x, (float)(y + 60)}, "FLAGS: " + flags,
-                        textColor, {scale, scale});
-
-        DrawStringDecal(
-            {(float)x, (float)(y + 70)},
-            "STATE: " + std::string(isPaused ? "PAUSED" : "RUNNING"),
-            isPaused ? olc::RED : olc::GREEN, {scale, scale});
-
-        Instructions instructions;
-        std::string opcodeName =
-            instructions.getOpcodeName(bus->read(cpu->getPC()));
-
-        DrawStringDecal({(float)x, (float)(y + 80)},
-                        "OPCODE: " + opcodeName + " [" +
-                            utils::hexToString(bus->read(cpu->getPC()), 2) +
-                            "]",
-                        textColor, {scale, scale});
-
-        DrawStringDecal({(float)x, (float)(y + 100)}, "CONTROLS:", olc::YELLOW,
-                        {scale, scale});
-        DrawStringDecal({(float)x, (float)(y + 110)}, "P - Pause/Continue",
-                        textColor, {scale, scale});
-        DrawStringDecal({(float)x, (float)(y + 120)}, "S - Step (when paused)",
-                        textColor, {scale, scale});
+        InvalidateRect(hwnd, nullptr, FALSE);
     }
 };
